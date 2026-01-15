@@ -1,7 +1,5 @@
 import { Fighter } from './Fighter';
-import { DamageNumberManager } from './DamageNumber';
 import type { Team } from './types';
-import type { TeamModifiers } from './Card';
 
 export class Arrow {
   x: number;

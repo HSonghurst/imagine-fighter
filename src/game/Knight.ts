@@ -87,7 +87,6 @@ export class Knight extends Fighter {
 
     // Draw invulnerability shield effect
     if (Date.now() < this.invulnerableUntil) {
-      const timeLeft = this.invulnerableUntil - Date.now();
       const pulse = Math.sin(Date.now() / 100) * 0.2 + 0.6;
 
       // Golden shield aura

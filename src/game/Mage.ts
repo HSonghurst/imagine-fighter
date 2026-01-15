@@ -59,7 +59,7 @@ export class Mage extends Fighter {
     }
   }
 
-  private startConflagration(startTarget: Fighter, allEnemies: Fighter[]): void {
+  private startConflagration(startTarget: Fighter, _allEnemies: Fighter[]): void {
     // Start a chain fire from the mage to the target
     this.chainFires.push({
       x: this.x,

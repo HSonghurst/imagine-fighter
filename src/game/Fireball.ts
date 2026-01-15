@@ -1,5 +1,4 @@
 import { Fighter } from './Fighter';
-import { DamageNumberManager } from './DamageNumber';
 import type { Team } from './types';
 
 export class Fireball {
