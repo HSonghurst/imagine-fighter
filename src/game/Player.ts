@@ -55,7 +55,7 @@ export class Player {
     this.team = team;
     this.x = canvasWidth / 2;
     // Position near the team's base
-    this.y = team === 'top' ? 100 : canvasHeight - 100;
+    this.y = team === 'top' ? 100 : canvasHeight - 140;
   }
 
   // Methods for Fighter targeting compatibility
