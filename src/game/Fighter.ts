@@ -8,6 +8,7 @@ export interface StatusEffects {
   poison: number;
   frozen: number;
   frozenUntil: number;
+  void: number;
 }
 
 export abstract class Fighter {
@@ -36,7 +37,8 @@ export abstract class Fighter {
     burning: 0,
     poison: 0,
     frozen: 0,
-    frozenUntil: 0
+    frozenUntil: 0,
+    void: 0
   };
 
   private lastStatusTick: number = 0;
@@ -145,6 +147,14 @@ export abstract class Fighter {
       this.statusEffects.poison = Math.max(0, this.statusEffects.poison - 0.5);
     }
 
+    // Void damage (purple)
+    if (this.statusEffects.void > 0) {
+      const voidDamage = this.statusEffects.void;
+      this.health -= voidDamage;
+      DamageNumberManager.spawn(this.x, this.y - 10, voidDamage, '#a855f7');
+      this.statusEffects.void = Math.max(0, this.statusEffects.void - 1.2);
+    }
+
     if (this.health <= 0) {
       this.health = 0;
       this.isDead = true;
@@ -219,30 +229,35 @@ export abstract class Fighter {
 
     target.takeDamage(finalDamage, this, isCrit);
 
-    // Apply status effects from modifiers (all use base values * multipliers)
+    // Apply class-specific on-hit status effects
     if (this.modifiers) {
-      // Burn (base 3 dmg/sec * multiplier)
-      if (this.modifiers.burnMultiplier > 1) {
-        target.statusEffects.burning += 3 * this.modifiers.burnMultiplier;
+      const type = this.getType();
+
+      // Swordsman: Fire on hit
+      if (type === 'swordsman' && this.modifiers.swordsmanFireOnHit) {
+        const baseBurn = 3;
+        const fireMultiplier = this.modifiers.fireDoTMultiplier;
+        target.statusEffects.burning += baseBurn * fireMultiplier;
       }
-      // Poison (base 2 dmg/sec * multiplier)
-      if (this.modifiers.poisonMultiplier > 1) {
-        target.statusEffects.poison += 2 * this.modifiers.poisonMultiplier;
-      }
-      // Freeze (base 10% * multiplier) - only if we have freeze card
-      if (this.modifiers.freezeChance > 1) {
-        const baseFreezeChance = 0.1;
-        if (Math.random() < baseFreezeChance * this.modifiers.freezeChance) {
-          target.statusEffects.frozenUntil = Date.now() + 1500;
+
+      // Knight: Frost (freeze chance) on hit
+      if (type === 'knight' && this.modifiers.knightFrostOnHit) {
+        const baseFreezeChance = 0.15;
+        const frostMultiplier = this.modifiers.frostDurationMultiplier;
+        if (Math.random() < baseFreezeChance) {
+          const baseDuration = 1500;
+          target.statusEffects.frozenUntil = Date.now() + baseDuration * frostMultiplier;
           SoundManager.playFreeze();
         }
       }
+
       // Lifesteal (multiplier - 1 = actual percentage, e.g., 1.2 = 20% lifesteal)
       if (this.modifiers.lifestealPercent > 1) {
         const lifestealPercent = this.modifiers.lifestealPercent - 1;
         const healAmount = finalDamage * lifestealPercent;
         this.health = Math.min(this.maxHealth, this.health + healAmount);
       }
+
       // Splash damage (base 20% * multiplier) - works for all units
       if (this.modifiers.splashMultiplier > 1 && allEnemies) {
         const baseSplash = 0.2;
@@ -349,6 +364,14 @@ export abstract class Fighter {
       ctx.fill();
     }
 
+    // Draw void effect
+    if (this.statusEffects.void > 0) {
+      ctx.fillStyle = 'rgba(139, 92, 246, 0.5)';
+      ctx.beginPath();
+      ctx.arc(this.x, this.y - 5 + bobOffset, 18, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
     this.drawHealthBar(ctx);
   }
 
@@ -379,6 +402,14 @@ export abstract class Fighter {
       ctx.fillStyle = 'rgba(100, 255, 0, 0.4)';
       ctx.beginPath();
       ctx.arc(this.x, this.y + 5 + bobOffset, 10, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Draw void effect (purple)
+    if (this.statusEffects.void > 0) {
+      ctx.fillStyle = 'rgba(139, 92, 246, 0.5)';
+      ctx.beginPath();
+      ctx.arc(this.x, this.y - 3 + bobOffset, 11, 0, Math.PI * 2);
       ctx.fill();
     }
   }

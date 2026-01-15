@@ -1,7 +1,9 @@
-import { Fighter } from './Fighter';
+import type { Fighter } from './Fighter';
+import type { Player } from './Player';
 import type { Team } from './types';
+import { SoundManager } from './SoundManager';
 
-export class Arrow {
+export class PlayerArrow {
   x: number;
   y: number;
   targetX: number;
@@ -10,11 +12,11 @@ export class Arrow {
   damage: number;
   team: Team;
   target: Fighter;
-  shooter: Fighter | null;
+  shooter: Player;
   isDead: boolean = false;
   angle: number;
 
-  constructor(x: number, y: number, target: Fighter, damage: number, team: Team, shooter?: Fighter) {
+  constructor(x: number, y: number, target: Fighter, damage: number, team: Team, shooter: Player) {
     this.x = x;
     this.y = y;
     this.target = target;
@@ -22,7 +24,7 @@ export class Arrow {
     this.targetY = target.y;
     this.damage = damage;
     this.team = team;
-    this.shooter = shooter || null;
+    this.shooter = shooter;
 
     const dx = this.targetX - this.x;
     const dy = this.targetY - this.y;
@@ -51,7 +53,7 @@ export class Arrow {
       if (!this.target.isDead) {
         let finalDamage = this.damage;
         let isCrit = false;
-        const modifiers = this.shooter?.modifiers;
+        const modifiers = this.shooter.modifiers;
 
         // Critical hit check (base 5% * multiplier)
         const baseCritChance = 0.05;
@@ -59,22 +61,17 @@ export class Arrow {
         if (Math.random() < baseCritChance * critMultiplier) {
           finalDamage *= 2;
           isCrit = true;
+          SoundManager.playCritical();
         }
 
-        this.target.takeDamage(finalDamage, this.shooter || undefined, isCrit);
+        // Pass undefined as attacker to avoid type issues (thorns won't apply to ranged attacks anyway)
+        this.target.takeDamage(finalDamage, undefined, isCrit);
 
-        // Apply archer-specific poison on-hit
-        if (modifiers) {
-          if (modifiers.archerPoisonOnHit) {
-            const basePoison = 2;
-            const poisonMultiplier = modifiers.poisonDoTMultiplier;
-            this.target.statusEffects.poison += basePoison * poisonMultiplier;
-          }
-          if (modifiers.lifestealPercent > 1 && this.shooter) {
-            const lifestealPercent = modifiers.lifestealPercent - 1;
-            const healAmount = finalDamage * lifestealPercent;
-            this.shooter.health = Math.min(this.shooter.maxHealth, this.shooter.health + healAmount);
-          }
+        // Player arrows only apply lifesteal (no class-specific status effects)
+        if (modifiers && modifiers.lifestealPercent > 1) {
+          const lifestealPercent = modifiers.lifestealPercent - 1;
+          const healAmount = finalDamage * lifestealPercent;
+          this.shooter.health = Math.min(this.shooter.maxHealth, this.shooter.health + healAmount);
         }
       }
       this.isDead = true;
@@ -92,7 +89,7 @@ export class Arrow {
     ctx.translate(this.x, this.y);
     ctx.rotate(this.angle);
 
-    // Smaller arrow shaft
+    // Arrow shaft
     ctx.strokeStyle = '#8B4513';
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -100,8 +97,8 @@ export class Arrow {
     ctx.lineTo(4, 0);
     ctx.stroke();
 
-    // Smaller arrowhead
-    ctx.fillStyle = '#4a4a4a';
+    // Arrowhead (golden for player)
+    ctx.fillStyle = '#fbbf24';
     ctx.beginPath();
     ctx.moveTo(6, 0);
     ctx.lineTo(3, -2);
@@ -109,7 +106,7 @@ export class Arrow {
     ctx.closePath();
     ctx.fill();
 
-    // Smaller fletching
+    // Fletching
     ctx.strokeStyle = '#a0522d';
     ctx.lineWidth = 1;
     ctx.beginPath();

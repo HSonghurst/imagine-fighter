@@ -8,8 +8,9 @@ import { Healer } from './Healer';
 import { XPOrb } from './XPOrb';
 import { Tower } from './Tower';
 import { Building, BUILDING_TYPES } from './Building';
-import { ALL_CARDS, TeamModifiers } from './Card';
+import { ALL_CARDS, TeamModifiers, pickRandomRarity } from './Card';
 import { SoundManager } from './SoundManager';
+import { Player } from './Player';
 import type { Card } from './Card';
 import type { BuildingChoice } from './Building';
 import type { Team, FighterType } from './types';
@@ -29,7 +30,7 @@ export class Game {
   private xpOrbs: XPOrb[] = [];
   private topRespawnTimers: Map<FighterType, number> = new Map();
   private bottomRespawnTimers: Map<FighterType, number> = new Map();
-  private respawnDelay: number = 0; // Instant respawn
+  private respawnDelay: number = 500; // 500ms respawn delay
   private topKills: number = 0;
   private bottomKills: number = 0;
   private topXP: number = 0;
@@ -48,6 +49,8 @@ export class Game {
   private selectionType: SelectionType | null = null;
   private pendingSelections: { team: Team; type: SelectionType }[] = [];
   private singlePlayerMode: boolean = false;
+  private player: Player | null = null;
+  private backgroundImage: HTMLImageElement | null = null;
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -62,7 +65,25 @@ export class Game {
     this.updateCountsCallback = updateCounts;
     this.onWinnerCallback = onWinner;
     this.onSelectionCallback = onSelection;
+
+    // Load background image
+    this.backgroundImage = new Image();
+    this.backgroundImage.src = '/grass-background.png';
+
     this.clear();
+
+    // Set up keyboard listeners for player control
+    window.addEventListener('keydown', (e) => {
+      if (this.player && ['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(e.key.toLowerCase())) {
+        e.preventDefault();
+        this.player.handleKeyDown(e.key);
+      }
+    });
+    window.addEventListener('keyup', (e) => {
+      if (this.player) {
+        this.player.handleKeyUp(e.key);
+      }
+    });
   }
 
   start(): void {
@@ -72,6 +93,9 @@ export class Game {
     // Create towers
     this.topTower = new Tower('top', this.canvas.width, this.canvas.height);
     this.bottomTower = new Tower('bottom', this.canvas.width, this.canvas.height);
+    // Create player for bottom team (player-controlled)
+    this.player = new Player('bottom', this.canvas.width, this.canvas.height);
+    this.player.setModifiers(this.bottomModifiers);
     // Each team starts with building selection
     this.triggerSelection('top', 'building');
     this.triggerSelection('bottom', 'building');
@@ -86,6 +110,7 @@ export class Game {
     this.bottomBuildings = new Array(10).fill(null);
     this.topTower = null;
     this.bottomTower = null;
+    this.player = null;
     this.xpOrbs = [];
     this.topKills = 0;
     this.bottomKills = 0;
@@ -233,6 +258,13 @@ export class Game {
       this.onWinnerCallback('top');
       return;
     }
+    // Player death = game over (top team wins)
+    if (this.player?.isDead) {
+      this.running = false;
+      SoundManager.playVictory();
+      this.onWinnerCallback('top');
+      return;
+    }
 
     // Spawn units up to building cap
     this.spawnUnitsUpToCap('top', deltaTime);
@@ -242,11 +274,15 @@ export class Game {
     const aliveTop = this.topTeam.filter(f => !f.isDead);
     const aliveBottom = this.bottomTeam.filter(f => !f.isDead);
 
-    // Create target lists that include towers
+    // Create target lists that include towers and player
     const topTargets: (Fighter | Tower)[] = [...aliveTop];
     const bottomTargets: (Fighter | Tower)[] = [...aliveBottom];
     if (this.topTower && !this.topTower.isDead) topTargets.push(this.topTower as unknown as Fighter);
     if (this.bottomTower && !this.bottomTower.isDead) bottomTargets.push(this.bottomTower as unknown as Fighter);
+    // Add player to targets (player is on bottom team, so top team can target them)
+    if (this.player && !this.player.isDead) {
+      bottomTargets.push(this.player as unknown as Fighter);
+    }
 
     for (const fighter of this.topTeam) {
       fighter.update(bottomTargets as Fighter[], deltaTime, aliveTop);
@@ -263,10 +299,15 @@ export class Game {
       this.bottomTower.update(aliveTop);
     }
 
-    // Update XP orbs
+    // Update player (pass top team as enemies since player is on bottom team)
+    if (this.player) {
+      this.player.update(deltaTime, this.canvas.width, this.canvas.height, aliveTop);
+    }
+
+    // Update XP orbs (pass player for attraction)
     for (const orb of this.xpOrbs) {
       const wasCollected = orb.collected;
-      orb.update(deltaTime, this.canvas.height);
+      orb.update(deltaTime, this.canvas.height, this.player || undefined);
 
       if (!wasCollected && orb.collected) {
         this.collectXP(orb.targetTeam, orb.value);
@@ -352,7 +393,8 @@ export class Game {
   }
 
   private getXPRequired(level: number): number {
-    return Math.round(20 * Math.pow(1.2, level - 1));
+    // Polynomial curve: XP requirements grow steeper at higher levels
+    return Math.round(45 * Math.pow(level, 0.9));
   }
 
   private collectXP(team: Team, amount: number): void {
@@ -458,19 +500,100 @@ export class Game {
 
   private getRandomCards(count: number, team?: Team): Card[] {
     const modifiers = team === 'top' ? this.topModifiers : this.bottomModifiers;
+    const buildings = team === 'top' ? this.topBuildings : this.bottomBuildings;
+    const level = team === 'top' ? this.topLevel : this.bottomLevel;
 
-    // Filter out ability cards we already have
+    // Get unique fighter types from buildings
+    const ownedTypes = new Set<string>();
+    for (const building of buildings) {
+      if (building) {
+        ownedTypes.add(building.type);
+      }
+    }
+
+    // Filter out cards we can't use
     const availableCards = ALL_CARDS.filter(card => {
       const e = card.effect;
+
+      // Filter out ability cards we already have
       if (e.archerFanAbility && modifiers.archerFanAbility) return false;
       if (e.swordsmanSweepAbility && modifiers.swordsmanSweepAbility) return false;
       if (e.knightTauntAbility && modifiers.knightTauntAbility) return false;
-      if (e.mageConflagrationAbility && modifiers.mageConflagrationAbility) return false;
+      if (e.mageVoidEruptionAbility && modifiers.mageVoidEruptionAbility) return false;
+
+      // Filter out ability cards for units we don't have
+      if (e.archerFanAbility && !ownedTypes.has('archer')) return false;
+      if (e.swordsmanSweepAbility && !ownedTypes.has('swordsman')) return false;
+      if (e.knightTauntAbility && !ownedTypes.has('knight')) return false;
+      if (e.mageVoidEruptionAbility && !ownedTypes.has('mage')) return false;
+
+      // Filter out on-hit application cards we already have (can only pick once)
+      if (e.archerPoisonOnHit && modifiers.archerPoisonOnHit) return false;
+      if (e.swordsmanFireOnHit && modifiers.swordsmanFireOnHit) return false;
+      if (e.knightFrostOnHit && modifiers.knightFrostOnHit) return false;
+
+      // Filter out on-hit application cards for units we don't have
+      if (e.archerPoisonOnHit && !ownedTypes.has('archer')) return false;
+      if (e.swordsmanFireOnHit && !ownedTypes.has('swordsman')) return false;
+      if (e.knightFrostOnHit && !ownedTypes.has('knight')) return false;
+
+      // Filter out DoT/duration multiplier cards if we don't have the on-hit application
+      // Poison DoT only useful if archer has poison on-hit
+      if (e.poisonDoTMultiplier && !modifiers.archerPoisonOnHit) return false;
+      // Fire DoT only useful if swordsman has fire on-hit
+      if (e.fireDoTMultiplier && !modifiers.swordsmanFireOnHit) return false;
+      // Frost duration only useful if knight has frost on-hit
+      if (e.frostDurationMultiplier && !modifiers.knightFrostOnHit) return false;
+      // Void DoT only useful if we have mages (they always apply void)
+      if (e.voidDoTMultiplier && !ownedTypes.has('mage')) return false;
+
+      // Filter out type-specific stat cards for units we don't have
+      if (e.damageMultiplier && e.damageMultiplier.type !== 'all' && !ownedTypes.has(e.damageMultiplier.type)) return false;
+      if (e.healthMultiplier && e.healthMultiplier.type !== 'all' && !ownedTypes.has(e.healthMultiplier.type)) return false;
+      if (e.rangeMultiplier && e.rangeMultiplier.type !== 'all' && !ownedTypes.has(e.rangeMultiplier.type)) return false;
+
       return true;
     });
 
-    const shuffled = availableCards.sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, count);
+    // Pick cards using weighted rarity selection
+    const selectedCards: Card[] = [];
+    const usedBaseNames = new Set<string>(); // Prevent duplicate base cards
+
+    for (let i = 0; i < count; i++) {
+      const rarity = pickRandomRarity(level);
+      const cardsOfRarity = availableCards.filter(c =>
+        c.rarity === rarity && !usedBaseNames.has(this.getBaseName(c.name))
+      );
+
+      if (cardsOfRarity.length > 0) {
+        const card = cardsOfRarity[Math.floor(Math.random() * cardsOfRarity.length)];
+        selectedCards.push(card);
+        usedBaseNames.add(this.getBaseName(card.name));
+      } else {
+        // Fallback: pick any available card of any rarity
+        const remainingCards = availableCards.filter(c =>
+          !usedBaseNames.has(this.getBaseName(c.name))
+        );
+        if (remainingCards.length > 0) {
+          const card = remainingCards[Math.floor(Math.random() * remainingCards.length)];
+          selectedCards.push(card);
+          usedBaseNames.add(this.getBaseName(card.name));
+        }
+      }
+    }
+
+    return selectedCards;
+  }
+
+  private getBaseName(cardName: string): string {
+    // Remove rarity prefix to get base card name
+    const prefixes = ['Rare ', 'Epic ', 'Legendary '];
+    for (const prefix of prefixes) {
+      if (cardName.startsWith(prefix)) {
+        return cardName.slice(prefix.length);
+      }
+    }
+    return cardName;
   }
 
   private getRandomBuildings(count: number): BuildingChoice[] {
@@ -518,6 +641,11 @@ export class Game {
     }
     for (const fighter of this.bottomTeam) {
       fighter.draw(ctx);
+    }
+
+    // Draw player
+    if (this.player) {
+      this.player.draw(ctx);
     }
 
     // Draw damage numbers
@@ -616,7 +744,7 @@ export class Game {
       { has: modifiers.archerFanAbility, color: '#22c55e', label: 'A' },
       { has: modifiers.swordsmanSweepAbility, color: '#3b82f6', label: 'S' },
       { has: modifiers.knightTauntAbility, color: '#f59e0b', label: 'K' },
-      { has: modifiers.mageConflagrationAbility, color: '#ef4444', label: 'M' },
+      { has: modifiers.mageVoidEruptionAbility, color: '#7c3aed', label: 'M' },
     ];
 
     let iconX = this.canvas.width - 30;
@@ -647,24 +775,13 @@ export class Game {
   private clear(): void {
     const ctx = this.ctx;
 
-    // Draw grassy background
-    ctx.fillStyle = '#228B22'; // Forest green base
-    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-    // Add grass texture with darker patches
-    ctx.fillStyle = '#1e7b1e';
-    for (let i = 0; i < 80; i++) {
-      const x = (i * 37) % this.canvas.width;
-      const y = (i * 23) % this.canvas.height;
-      ctx.fillRect(x, y, 15, 8);
-    }
-
-    // Add lighter grass highlights
-    ctx.fillStyle = '#32CD32';
-    for (let i = 0; i < 60; i++) {
-      const x = (i * 41 + 10) % this.canvas.width;
-      const y = (i * 29 + 5) % this.canvas.height;
-      ctx.fillRect(x, y, 6, 3);
+    // Draw background image if loaded, otherwise fallback to solid color
+    if (this.backgroundImage && this.backgroundImage.complete) {
+      ctx.drawImage(this.backgroundImage, 0, 0, this.canvas.width, this.canvas.height);
+    } else {
+      // Fallback to solid green while image loads
+      ctx.fillStyle = '#228B22';
+      ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
     // Draw base areas (dirt paths near towers)

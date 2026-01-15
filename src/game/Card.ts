@@ -8,21 +8,33 @@ export interface CardEffect {
   attackSpeedMultiplier?: number;
   rangeMultiplier?: { type: FighterType | 'all'; value: number };
   spawnWeight?: { type: FighterType; multiplier: number };
-  // Status effect chances/multipliers
-  burnMultiplier?: number;
-  freezeChance?: number;
-  poisonMultiplier?: number;
+
+  // Class-specific status effect on-hit unlocks
+  archerPoisonOnHit?: boolean;
+  swordsmanFireOnHit?: boolean;
+  knightFrostOnHit?: boolean;
+
+  // Status effect DoT/duration multipliers (only work if class has on-hit unlocked)
+  fireDoTMultiplier?: number;
+  poisonDoTMultiplier?: number;
+  frostDurationMultiplier?: number;
+  voidDoTMultiplier?: number;
+
+  // Other effects
   lifestealPercent?: number;
   splashMultiplier?: number;
   critChance?: number;
   thornsMultiplier?: number;
   regenMultiplier?: number;
+
   // Ability unlocks
   archerFanAbility?: boolean;
   swordsmanSweepAbility?: boolean;
   knightTauntAbility?: boolean;
-  mageConflagrationAbility?: boolean;
+  mageVoidEruptionAbility?: boolean;
 }
+
+export type CardRarity = 'common' | 'rare' | 'epic' | 'legendary';
 
 export interface Card {
   id: number;
@@ -30,73 +42,230 @@ export interface Card {
   description: string;
   effect: CardEffect;
   color: string;
+  rarity: CardRarity;
+  rarityColor: string;
 }
 
-export const ALL_CARDS: Card[] = [
-  // Damage multipliers (reduced by 75%)
-  { id: 1, name: "Sharp Arrows", description: "+5% Archer damage", effect: { damageMultiplier: { type: 'archer', value: 1.05 } }, color: '#ef4444' },
-  { id: 2, name: "Honed Blades", description: "+5% Swordsman damage", effect: { damageMultiplier: { type: 'swordsman', value: 1.05 } }, color: '#ef4444' },
-  { id: 3, name: "Inferno Staff", description: "+5% Mage damage", effect: { damageMultiplier: { type: 'mage', value: 1.05 } }, color: '#ef4444' },
-  { id: 4, name: "Heavy Strikes", description: "+5% Knight damage", effect: { damageMultiplier: { type: 'knight', value: 1.05 } }, color: '#ef4444' },
-  { id: 5, name: "War Fury", description: "+4% all damage", effect: { damageMultiplier: { type: 'all', value: 1.04 } }, color: '#ef4444' },
+// Rarity multipliers: common 1x, rare 2x, epic 3x, legendary 5x
+const RARITY_MULTIPLIERS: Record<CardRarity, number> = {
+  common: 1,
+  rare: 2,
+  epic: 3,
+  legendary: 5
+};
+
+const RARITY_COLORS: Record<CardRarity, string> = {
+  common: '#9ca3af',
+  rare: '#3b82f6',
+  epic: '#a855f7',
+  legendary: '#f59e0b'
+};
+
+interface BaseCard {
+  name: string;
+  description: string;
+  effect: CardEffect;
+  color: string;
+}
+
+// Helper to scale a card effect by rarity multiplier
+function scaleEffect(effect: CardEffect, multiplier: number): CardEffect {
+  const scaled: CardEffect = {};
+
+  if (effect.damageMultiplier) {
+    const bonus = (effect.damageMultiplier.value - 1) * multiplier;
+    scaled.damageMultiplier = { type: effect.damageMultiplier.type, value: 1 + bonus };
+  }
+  if (effect.healthMultiplier) {
+    const bonus = effect.healthMultiplier.value - 1;
+    if (bonus < 0) {
+      scaled.healthMultiplier = { type: effect.healthMultiplier.type, value: 1 + bonus * multiplier };
+    } else {
+      scaled.healthMultiplier = { type: effect.healthMultiplier.type, value: 1 + bonus * multiplier };
+    }
+  }
+  if (effect.speedMultiplier) {
+    const bonus = (effect.speedMultiplier - 1) * multiplier;
+    scaled.speedMultiplier = 1 + bonus;
+  }
+  if (effect.attackSpeedMultiplier) {
+    const bonus = (effect.attackSpeedMultiplier - 1) * multiplier;
+    scaled.attackSpeedMultiplier = 1 + bonus;
+  }
+  if (effect.rangeMultiplier) {
+    const bonus = (effect.rangeMultiplier.value - 1) * multiplier;
+    scaled.rangeMultiplier = { type: effect.rangeMultiplier.type, value: 1 + bonus };
+  }
+
+  // DoT multipliers scale
+  if (effect.fireDoTMultiplier) {
+    const bonus = (effect.fireDoTMultiplier - 1) * multiplier;
+    scaled.fireDoTMultiplier = 1 + bonus;
+  }
+  if (effect.poisonDoTMultiplier) {
+    const bonus = (effect.poisonDoTMultiplier - 1) * multiplier;
+    scaled.poisonDoTMultiplier = 1 + bonus;
+  }
+  if (effect.frostDurationMultiplier) {
+    const bonus = (effect.frostDurationMultiplier - 1) * multiplier;
+    scaled.frostDurationMultiplier = 1 + bonus;
+  }
+  if (effect.voidDoTMultiplier) {
+    const bonus = (effect.voidDoTMultiplier - 1) * multiplier;
+    scaled.voidDoTMultiplier = 1 + bonus;
+  }
+
+  if (effect.lifestealPercent) {
+    const bonus = (effect.lifestealPercent - 1) * multiplier;
+    scaled.lifestealPercent = 1 + bonus;
+  }
+  if (effect.splashMultiplier) {
+    const bonus = (effect.splashMultiplier - 1) * multiplier;
+    scaled.splashMultiplier = 1 + bonus;
+  }
+  if (effect.critChance) {
+    const bonus = (effect.critChance - 1) * multiplier;
+    scaled.critChance = 1 + bonus;
+  }
+  if (effect.thornsMultiplier) {
+    const bonus = (effect.thornsMultiplier - 1) * multiplier;
+    scaled.thornsMultiplier = 1 + bonus;
+  }
+  if (effect.regenMultiplier) {
+    const bonus = (effect.regenMultiplier - 1) * multiplier;
+    scaled.regenMultiplier = 1 + bonus;
+  }
+
+  // Abilities and on-hit unlocks don't scale - they're boolean
+  if (effect.archerPoisonOnHit) scaled.archerPoisonOnHit = true;
+  if (effect.swordsmanFireOnHit) scaled.swordsmanFireOnHit = true;
+  if (effect.knightFrostOnHit) scaled.knightFrostOnHit = true;
+  if (effect.archerFanAbility) scaled.archerFanAbility = true;
+  if (effect.swordsmanSweepAbility) scaled.swordsmanSweepAbility = true;
+  if (effect.knightTauntAbility) scaled.knightTauntAbility = true;
+  if (effect.mageVoidEruptionAbility) scaled.mageVoidEruptionAbility = true;
+
+  return scaled;
+}
+
+// Helper to generate description with scaled values
+function scaleDescription(desc: string, multiplier: number): string {
+  return desc.replace(/([+-]?\d+)%/g, (_, num) => {
+    const scaled = Math.round(parseInt(num) * multiplier);
+    return `${scaled >= 0 ? '+' : ''}${scaled}%`;
+  });
+}
+
+// Generate all rarity variants from base cards
+function generateCards(baseCards: BaseCard[]): Card[] {
+  const cards: Card[] = [];
+  let id = 1;
+  const rarities: CardRarity[] = ['common', 'rare', 'epic', 'legendary'];
+
+  for (const base of baseCards) {
+    for (const rarity of rarities) {
+      const multiplier = RARITY_MULTIPLIERS[rarity];
+      const rarityPrefix = rarity === 'common' ? '' : `${rarity.charAt(0).toUpperCase() + rarity.slice(1)} `;
+
+      cards.push({
+        id: id++,
+        name: `${rarityPrefix}${base.name}`,
+        description: scaleDescription(base.description, multiplier),
+        effect: scaleEffect(base.effect, multiplier),
+        color: base.color,
+        rarity,
+        rarityColor: RARITY_COLORS[rarity]
+      });
+    }
+  }
+
+  return cards;
+}
+
+// Base card definitions (common values - will be scaled by rarity)
+const BASE_CARDS: BaseCard[] = [
+  // Damage multipliers
+  { name: "Sharp Arrows", description: "+5% Archer damage", effect: { damageMultiplier: { type: 'archer', value: 1.05 } }, color: '#ef4444' },
+  { name: "Honed Blades", description: "+5% Swordsman damage", effect: { damageMultiplier: { type: 'swordsman', value: 1.05 } }, color: '#ef4444' },
+  { name: "Void Staff", description: "+5% Mage damage", effect: { damageMultiplier: { type: 'mage', value: 1.05 } }, color: '#7c3aed' },
+  { name: "Heavy Strikes", description: "+5% Knight damage", effect: { damageMultiplier: { type: 'knight', value: 1.05 } }, color: '#ef4444' },
+  { name: "War Fury", description: "+4% all damage", effect: { damageMultiplier: { type: 'all', value: 1.04 } }, color: '#ef4444' },
 
   // Health multipliers
-  { id: 6, name: "Thick Armor", description: "+6% Swordsman health", effect: { healthMultiplier: { type: 'swordsman', value: 1.06 } }, color: '#22c55e' },
-  { id: 7, name: "Fortress Shield", description: "+8% Knight health", effect: { healthMultiplier: { type: 'knight', value: 1.08 } }, color: '#22c55e' },
-  { id: 8, name: "Arcane Barrier", description: "+6% Mage health", effect: { healthMultiplier: { type: 'mage', value: 1.06 } }, color: '#22c55e' },
-  { id: 9, name: "Fortitude", description: "+4% all health", effect: { healthMultiplier: { type: 'all', value: 1.04 } }, color: '#22c55e' },
-  { id: 10, name: "Ranger Endurance", description: "+6% Archer health", effect: { healthMultiplier: { type: 'archer', value: 1.06 } }, color: '#22c55e' },
+  { name: "Thick Armor", description: "+6% Swordsman health", effect: { healthMultiplier: { type: 'swordsman', value: 1.06 } }, color: '#22c55e' },
+  { name: "Fortress Shield", description: "+8% Knight health", effect: { healthMultiplier: { type: 'knight', value: 1.08 } }, color: '#22c55e' },
+  { name: "Arcane Barrier", description: "+6% Mage health", effect: { healthMultiplier: { type: 'mage', value: 1.06 } }, color: '#22c55e' },
+  { name: "Fortitude", description: "+4% all health", effect: { healthMultiplier: { type: 'all', value: 1.04 } }, color: '#22c55e' },
+  { name: "Ranger Endurance", description: "+6% Archer health", effect: { healthMultiplier: { type: 'archer', value: 1.06 } }, color: '#22c55e' },
 
   // Speed multipliers
-  { id: 11, name: "Swift Feet", description: "+6% movement speed", effect: { speedMultiplier: 1.06 }, color: '#3b82f6' },
-  { id: 12, name: "Battle Frenzy", description: "+5% attack speed", effect: { attackSpeedMultiplier: 1.05 }, color: '#3b82f6' },
-  { id: 13, name: "Lightning Reflexes", description: "+4% speed & attack speed", effect: { speedMultiplier: 1.04, attackSpeedMultiplier: 1.04 }, color: '#3b82f6' },
+  { name: "Swift Feet", description: "+6% movement speed", effect: { speedMultiplier: 1.06 }, color: '#3b82f6' },
+  { name: "Battle Frenzy", description: "+5% attack speed", effect: { attackSpeedMultiplier: 1.05 }, color: '#3b82f6' },
 
   // Range multipliers
-  { id: 14, name: "Eagle Eye", description: "+8% Archer range", effect: { rangeMultiplier: { type: 'archer', value: 1.08 } }, color: '#a855f7' },
-  { id: 15, name: "Far Sight", description: "+8% Mage range", effect: { rangeMultiplier: { type: 'mage', value: 1.08 } }, color: '#a855f7' },
-  { id: 16, name: "Extended Reach", description: "+5% all range", effect: { rangeMultiplier: { type: 'all', value: 1.05 } }, color: '#a855f7' },
+  { name: "Eagle Eye", description: "+8% Archer range", effect: { rangeMultiplier: { type: 'archer', value: 1.08 } }, color: '#a855f7' },
+  { name: "Far Sight", description: "+8% Mage range", effect: { rangeMultiplier: { type: 'mage', value: 1.08 } }, color: '#a855f7' },
 
-  // Additional combat cards
-  { id: 17, name: "Piercing Shots", description: "+6% Archer damage", effect: { damageMultiplier: { type: 'archer', value: 1.06 } }, color: '#ef4444' },
-  { id: 18, name: "Arcane Power", description: "+6% Mage damage", effect: { damageMultiplier: { type: 'mage', value: 1.06 } }, color: '#a855f7' },
-  { id: 19, name: "Iron Will", description: "+5% all health", effect: { healthMultiplier: { type: 'all', value: 1.05 } }, color: '#22c55e' },
-  { id: 20, name: "Bloodlust", description: "+6% damage, -2% health", effect: { damageMultiplier: { type: 'all', value: 1.06 }, healthMultiplier: { type: 'all', value: 0.98 } }, color: '#dc2626' },
-  { id: 21, name: "Sniper Training", description: "+10% Archer range", effect: { rangeMultiplier: { type: 'archer', value: 1.1 } }, color: '#3b82f6' },
+  // Class-specific on-hit status effect unlocks
+  { name: "Poison Arrows", description: "Archer attacks apply poison", effect: { archerPoisonOnHit: true }, color: '#84cc16' },
+  { name: "Flaming Blades", description: "Swordsman attacks ignite enemies", effect: { swordsmanFireOnHit: true }, color: '#f59e0b' },
+  { name: "Frozen Edge", description: "Knight attacks freeze enemies", effect: { knightFrostOnHit: true }, color: '#06b6d4' },
 
-  // Status effects (percentage-based, compounding)
-  { id: 22, name: "Burning Weapons", description: "+2% burn damage on hit", effect: { burnMultiplier: 1.025 }, color: '#f59e0b' },
-  { id: 23, name: "Frost Touch", description: "+4% freeze chance", effect: { freezeChance: 1.04 }, color: '#06b6d4' },
-  { id: 24, name: "Poison Tips", description: "+2% poison damage on hit", effect: { poisonMultiplier: 1.025 }, color: '#84cc16' },
-  { id: 25, name: "Vampiric Strike", description: "+5% lifesteal", effect: { lifestealPercent: 1.05 }, color: '#dc2626' },
-  { id: 26, name: "Shattering Blow", description: "+4% splash damage", effect: { splashMultiplier: 1.04 }, color: '#ec4899' },
+  // Status effect DoT/duration multipliers
+  { name: "Searing Flames", description: "+10% fire damage over time", effect: { fireDoTMultiplier: 1.10 }, color: '#f59e0b' },
+  { name: "Toxic Venom", description: "+10% poison damage over time", effect: { poisonDoTMultiplier: 1.10 }, color: '#84cc16' },
+  { name: "Deep Freeze", description: "+10% frost duration", effect: { frostDurationMultiplier: 1.10 }, color: '#06b6d4' },
+  { name: "Void Corruption", description: "+10% void damage over time", effect: { voidDoTMultiplier: 1.10 }, color: '#7c3aed' },
 
-  // Special effects
-  { id: 27, name: "Critical Mastery", description: "+4% crit chance", effect: { critChance: 1.04 }, color: '#fbbf24' },
-  { id: 28, name: "Thorns Aura", description: "+4% thorns damage", effect: { thornsMultiplier: 1.04 }, color: '#10b981' },
-  { id: 29, name: "Regeneration", description: "+5% regen rate", effect: { regenMultiplier: 1.05 }, color: '#14b8a6' },
+  // Other effects
+  { name: "Vampiric Strike", description: "+5% lifesteal", effect: { lifestealPercent: 1.05 }, color: '#dc2626' },
+  { name: "Shattering Blow", description: "+4% splash damage", effect: { splashMultiplier: 1.04 }, color: '#ec4899' },
+  { name: "Critical Mastery", description: "+4% crit chance", effect: { critChance: 1.04 }, color: '#fbbf24' },
+  { name: "Thorns Aura", description: "+4% thorns damage", effect: { thornsMultiplier: 1.04 }, color: '#10b981' },
+  { name: "Regeneration", description: "+5% regen rate", effect: { regenMultiplier: 1.05 }, color: '#14b8a6' },
 
-  // More cards
-  { id: 30, name: "Glass Cannon", description: "+10% damage, -5% health", effect: { damageMultiplier: { type: 'all', value: 1.1 }, healthMultiplier: { type: 'all', value: 0.95 } }, color: '#f43f5e' },
-  { id: 31, name: "Berserker Rage", description: "+8% attack speed", effect: { attackSpeedMultiplier: 1.08 }, color: '#ef4444' },
-  { id: 32, name: "Fortified Armor", description: "+8% Knight health", effect: { healthMultiplier: { type: 'knight', value: 1.08 } }, color: '#6b7280' },
-  { id: 33, name: "Deadly Precision", description: "+6% crit chance", effect: { critChance: 1.06 }, color: '#fbbf24' },
-  { id: 34, name: "Infernal Touch", description: "+5% burn damage", effect: { burnMultiplier: 1.05 }, color: '#f97316' },
-  { id: 35, name: "Arctic Chill", description: "+6% freeze chance", effect: { freezeChance: 1.06 }, color: '#06b6d4' },
-  { id: 36, name: "Toxic Coating", description: "+5% poison damage", effect: { poisonMultiplier: 1.05 }, color: '#84cc16' },
-  { id: 37, name: "Soul Drain", description: "+8% lifesteal", effect: { lifestealPercent: 1.08 }, color: '#7c3aed' },
-  { id: 38, name: "Explosive Force", description: "+6% splash damage", effect: { splashMultiplier: 1.06 }, color: '#ec4899' },
-  { id: 39, name: "Sword Mastery", description: "+8% Swordsman damage", effect: { damageMultiplier: { type: 'swordsman', value: 1.08 } }, color: '#3b82f6' },
-  { id: 40, name: "Knight's Valor", description: "+6% Knight damage", effect: { damageMultiplier: { type: 'knight', value: 1.06 } }, color: '#f59e0b' },
-  { id: 41, name: "Marathon Runner", description: "+9% movement speed", effect: { speedMultiplier: 1.09 }, color: '#14b8a6' },
-  { id: 42, name: "Mage Supremacy", description: "+9% Mage damage, +5% range", effect: { damageMultiplier: { type: 'mage', value: 1.09 }, rangeMultiplier: { type: 'mage', value: 1.05 } }, color: '#a855f7' },
-
-  // Ability cards (unchanged - these are boolean toggles)
-  { id: 43, name: "Arrow Storm", description: "Archers fire fan of 5 arrows every 5 attacks", effect: { archerFanAbility: true }, color: '#22c55e' },
-  { id: 44, name: "Whirlwind Slash", description: "Swordsmen sweep all nearby enemies every 3 attacks", effect: { swordsmanSweepAbility: true }, color: '#3b82f6' },
-  { id: 45, name: "Guardian's Call", description: "Knights taunt enemies and become invulnerable (6s cooldown)", effect: { knightTauntAbility: true }, color: '#f59e0b' },
-  { id: 46, name: "Conflagration", description: "Mages cause chain-reaction fire every 10 attacks", effect: { mageConflagrationAbility: true }, color: '#ef4444' },
+  // Ability cards
+  { name: "Piercing Shot", description: "Every 5th arrow pierces through all enemies (50% damage after first)", effect: { archerFanAbility: true }, color: '#22c55e' },
+  { name: "Whirlwind Slash", description: "Swordsmen sweep all nearby enemies every 3 attacks", effect: { swordsmanSweepAbility: true }, color: '#3b82f6' },
+  { name: "Guardian's Call", description: "Knights taunt enemies and become invulnerable (6s cooldown)", effect: { knightTauntAbility: true }, color: '#f59e0b' },
+  { name: "Void Eruption", description: "Mages cause chain-reaction void blasts every 10 attacks", effect: { mageVoidEruptionAbility: true }, color: '#7c3aed' },
 ];
+
+// Generate all card variants
+export const ALL_CARDS: Card[] = generateCards(BASE_CARDS);
+
+// Base rarity weights for card selection (level 1)
+export const BASE_RARITY_WEIGHTS: Record<CardRarity, number> = {
+  common: 55,
+  rare: 28,
+  epic: 13,
+  legendary: 4
+};
+
+// Helper to pick a random rarity based on weights, scaling with level
+// Higher levels shift weights towards rarer cards
+export function pickRandomRarity(level: number = 1): CardRarity {
+  // Calculate level bonus (increases rarer card chances)
+  // At level 1: no bonus, at level 20: significant bonus
+  const levelFactor = Math.min((level - 1) / 15, 1); // 0 to 1 over 15 levels
+
+  // Shift weights: reduce common, increase rare/epic/legendary
+  const weights: Record<CardRarity, number> = {
+    common: Math.max(20, BASE_RARITY_WEIGHTS.common - levelFactor * 35),      // 55 -> 20
+    rare: BASE_RARITY_WEIGHTS.rare + levelFactor * 12,                         // 28 -> 40
+    epic: BASE_RARITY_WEIGHTS.epic + levelFactor * 15,                         // 13 -> 28
+    legendary: BASE_RARITY_WEIGHTS.legendary + levelFactor * 8                 // 4 -> 12
+  };
+
+  const total = Object.values(weights).reduce((a, b) => a + b, 0);
+  let roll = Math.random() * total;
+
+  for (const [rarity, weight] of Object.entries(weights) as [CardRarity, number][]) {
+    roll -= weight;
+    if (roll <= 0) return rarity;
+  }
+  return 'common';
+}
 
 export class TeamModifiers {
   // All multipliers start at 1.0 and compound
@@ -106,19 +275,30 @@ export class TeamModifiers {
   spawnWeights: Map<FighterType, number> = new Map();
   speedMultiplier: number = 1;
   attackSpeedMultiplier: number = 1;
-  burnMultiplier: number = 1;
-  freezeChance: number = 1;
-  poisonMultiplier: number = 1;
+
+  // Class-specific on-hit unlocks
+  archerPoisonOnHit: boolean = false;
+  swordsmanFireOnHit: boolean = false;
+  knightFrostOnHit: boolean = false;
+
+  // Status effect DoT/duration multipliers
+  fireDoTMultiplier: number = 1;
+  poisonDoTMultiplier: number = 1;
+  frostDurationMultiplier: number = 1;
+  voidDoTMultiplier: number = 1;
+
+  // Other multipliers
   lifestealPercent: number = 1;
   splashMultiplier: number = 1;
   critChance: number = 1;
   thornsMultiplier: number = 1;
   regenMultiplier: number = 1;
+
   // Ability unlocks
   archerFanAbility: boolean = false;
   swordsmanSweepAbility: boolean = false;
   knightTauntAbility: boolean = false;
-  mageConflagrationAbility: boolean = false;
+  mageVoidEruptionAbility: boolean = false;
 
   applyCard(card: Card): void {
     const e = card.effect;
@@ -142,19 +322,30 @@ export class TeamModifiers {
     }
     if (e.speedMultiplier) this.speedMultiplier *= e.speedMultiplier;
     if (e.attackSpeedMultiplier) this.attackSpeedMultiplier *= e.attackSpeedMultiplier;
-    if (e.burnMultiplier) this.burnMultiplier *= e.burnMultiplier;
-    if (e.freezeChance) this.freezeChance *= e.freezeChance;
-    if (e.poisonMultiplier) this.poisonMultiplier *= e.poisonMultiplier;
+
+    // On-hit unlocks
+    if (e.archerPoisonOnHit) this.archerPoisonOnHit = true;
+    if (e.swordsmanFireOnHit) this.swordsmanFireOnHit = true;
+    if (e.knightFrostOnHit) this.knightFrostOnHit = true;
+
+    // DoT/duration multipliers
+    if (e.fireDoTMultiplier) this.fireDoTMultiplier *= e.fireDoTMultiplier;
+    if (e.poisonDoTMultiplier) this.poisonDoTMultiplier *= e.poisonDoTMultiplier;
+    if (e.frostDurationMultiplier) this.frostDurationMultiplier *= e.frostDurationMultiplier;
+    if (e.voidDoTMultiplier) this.voidDoTMultiplier *= e.voidDoTMultiplier;
+
+    // Other multipliers
     if (e.lifestealPercent) this.lifestealPercent *= e.lifestealPercent;
     if (e.splashMultiplier) this.splashMultiplier *= e.splashMultiplier;
     if (e.critChance) this.critChance *= e.critChance;
     if (e.thornsMultiplier) this.thornsMultiplier *= e.thornsMultiplier;
     if (e.regenMultiplier) this.regenMultiplier *= e.regenMultiplier;
+
     // Ability unlocks
     if (e.archerFanAbility) this.archerFanAbility = true;
     if (e.swordsmanSweepAbility) this.swordsmanSweepAbility = true;
     if (e.knightTauntAbility) this.knightTauntAbility = true;
-    if (e.mageConflagrationAbility) this.mageConflagrationAbility = true;
+    if (e.mageVoidEruptionAbility) this.mageVoidEruptionAbility = true;
   }
 
   getDamageMultiplier(type: FighterType): number {

@@ -1,8 +1,12 @@
 import './style.css';
+import { inject } from '@vercel/analytics';
 import { Game } from './game/Game';
 import type { Team } from './game/types';
 import type { Card } from './game/Card';
 import type { BuildingChoice } from './game/Building';
+
+// Initialize Vercel Analytics
+inject();
 
 const canvas = document.getElementById('game-canvas') as HTMLCanvasElement;
 const topCount = document.getElementById('top-count')!;
@@ -85,16 +89,32 @@ function updateStatPanel(team: Team, element: HTMLElement): void {
     stats.push(`<div class="stat-item"><span class="stat-name">Attack Speed:</span> <span class="stat-value">+${Math.round((mods.attackSpeedMultiplier - 1) * 100)}%</span></div>`);
   }
 
-  // Status effects (all percentage-based multipliers)
-  if (mods.burnMultiplier > 1) {
-    stats.push(`<div class="stat-item"><span class="stat-name">Burn:</span> <span class="stat-value">+${Math.round((mods.burnMultiplier - 1) * 100)}%</span></div>`);
+  // Class-specific on-hit unlocks
+  if (mods.archerPoisonOnHit) {
+    stats.push(`<div class="stat-item"><span class="stat-name">Archer Poison:</span> <span class="stat-value">Active</span></div>`);
   }
-  if (mods.poisonMultiplier > 1) {
-    stats.push(`<div class="stat-item"><span class="stat-name">Poison:</span> <span class="stat-value">+${Math.round((mods.poisonMultiplier - 1) * 100)}%</span></div>`);
+  if (mods.swordsmanFireOnHit) {
+    stats.push(`<div class="stat-item"><span class="stat-name">Swordsman Fire:</span> <span class="stat-value">Active</span></div>`);
   }
-  if (mods.freezeChance > 1) {
-    stats.push(`<div class="stat-item"><span class="stat-name">Freeze:</span> <span class="stat-value">+${Math.round((mods.freezeChance - 1) * 100)}%</span></div>`);
+  if (mods.knightFrostOnHit) {
+    stats.push(`<div class="stat-item"><span class="stat-name">Knight Frost:</span> <span class="stat-value">Active</span></div>`);
   }
+
+  // Status effect DoT/duration multipliers
+  if (mods.fireDoTMultiplier > 1) {
+    stats.push(`<div class="stat-item"><span class="stat-name">Fire DoT:</span> <span class="stat-value">+${Math.round((mods.fireDoTMultiplier - 1) * 100)}%</span></div>`);
+  }
+  if (mods.poisonDoTMultiplier > 1) {
+    stats.push(`<div class="stat-item"><span class="stat-name">Poison DoT:</span> <span class="stat-value">+${Math.round((mods.poisonDoTMultiplier - 1) * 100)}%</span></div>`);
+  }
+  if (mods.frostDurationMultiplier > 1) {
+    stats.push(`<div class="stat-item"><span class="stat-name">Frost Duration:</span> <span class="stat-value">+${Math.round((mods.frostDurationMultiplier - 1) * 100)}%</span></div>`);
+  }
+  if (mods.voidDoTMultiplier > 1) {
+    stats.push(`<div class="stat-item"><span class="stat-name">Void DoT:</span> <span class="stat-value">+${Math.round((mods.voidDoTMultiplier - 1) * 100)}%</span></div>`);
+  }
+
+  // Other effects
   if (mods.lifestealPercent > 1) {
     stats.push(`<div class="stat-item"><span class="stat-name">Lifesteal:</span> <span class="stat-value">+${Math.round((mods.lifestealPercent - 1) * 100)}%</span></div>`);
   }
@@ -142,8 +162,10 @@ function onSelection(team: Team, items: (Card | BuildingChoice)[], type: 'card' 
     choiceEl.className = 'card';
 
     if (isCard(item)) {
-      choiceEl.style.borderColor = item.color;
+      choiceEl.style.borderColor = item.rarityColor;
+      choiceEl.style.boxShadow = `0 0 10px ${item.rarityColor}40`;
       choiceEl.innerHTML = `
+        <div class="card-rarity" style="background-color: ${item.rarityColor}">${item.rarity.toUpperCase()}</div>
         <div class="card-name" style="color: ${item.color}">${item.name}</div>
         <div class="card-description">${item.description}</div>
       `;

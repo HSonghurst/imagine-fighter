@@ -288,4 +288,429 @@ export class SpriteRenderer {
     this.pixel(ctx, baseX, baseY + 2*p + bobOffset, p, armorDark);
     this.pixel(ctx, baseX, baseY + 3*p + bobOffset, p, armorDark);
   }
+
+  static drawHorseman(ctx: CanvasRenderingContext2D, x: number, y: number, team: Team, frame: number, direction: 'up' | 'down' | 'left' | 'right' = 'right'): void {
+    const p = 2; // pixel size
+    const bobOffset = Math.sin(frame * Math.PI / 2) * 1;
+
+    // Colors
+    const skin = '#ffd5b5';
+    const armor = team === 'top' ? '#3b82f6' : '#ef4444';
+    const armorDark = team === 'top' ? '#1d4ed8' : '#b91c1c';
+    const armorLight = team === 'top' ? '#60a5fa' : '#f87171';
+    const cape = team === 'top' ? '#1e40af' : '#991b1b';
+    const horse = '#8b4513';
+    const horseDark = '#5c3317';
+    const horseLight = '#a0522d';
+    const mane = '#2d1810';
+    const crown = '#fbbf24';
+    const crownDark = '#d97706';
+
+    if (direction === 'right') {
+      this.drawHorsemanRight(ctx, x, y, p, bobOffset, frame, skin, armor, armorDark, armorLight, cape, horse, horseDark, horseLight, mane, crown, crownDark);
+    } else if (direction === 'left') {
+      this.drawHorsemanLeft(ctx, x, y, p, bobOffset, frame, skin, armor, armorDark, armorLight, cape, horse, horseDark, horseLight, mane, crown, crownDark);
+    } else if (direction === 'up') {
+      this.drawHorsemanUp(ctx, x, y, p, bobOffset, frame, skin, armor, armorDark, armorLight, cape, horse, horseDark, horseLight, mane, crown, crownDark);
+    } else {
+      this.drawHorsemanDown(ctx, x, y, p, bobOffset, frame, skin, armor, armorDark, armorLight, cape, horse, horseDark, horseLight, mane, crown, crownDark);
+    }
+  }
+
+  private static drawHorsemanRight(ctx: CanvasRenderingContext2D, x: number, y: number, p: number, bobOffset: number, frame: number,
+    skin: string, armor: string, armorDark: string, armorLight: string, cape: string,
+    horse: string, horseDark: string, horseLight: string, mane: string, crown: string, crownDark: string): void {
+    const baseX = x - 8 * p;
+    const baseY = y - 10 * p;
+
+    // === RIDER ===
+    // Crown
+    this.pixel(ctx, baseX + 7*p, baseY - p + bobOffset, p, crownDark);
+    this.pixel(ctx, baseX + 8*p, baseY - 2*p + bobOffset, p, crown);
+    this.pixel(ctx, baseX + 9*p, baseY - p + bobOffset, p, crown);
+    this.pixel(ctx, baseX + 10*p, baseY - 2*p + bobOffset, p, crown);
+    this.pixel(ctx, baseX + 11*p, baseY - p + bobOffset, p, crownDark);
+
+    // Head
+    this.pixel(ctx, baseX + 8*p, baseY + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 9*p, baseY + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 10*p, baseY + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 10*p, baseY + bobOffset, p, '#333'); // Eye
+
+    // Body/Armor
+    this.pixel(ctx, baseX + 7*p, baseY + p + bobOffset, p, armorDark);
+    this.pixel(ctx, baseX + 8*p, baseY + p + bobOffset, p, armor);
+    this.pixel(ctx, baseX + 9*p, baseY + p + bobOffset, p, armorLight);
+    this.pixel(ctx, baseX + 10*p, baseY + p + bobOffset, p, armor);
+    this.pixel(ctx, baseX + 11*p, baseY + p + bobOffset, p, armorDark);
+
+    this.pixel(ctx, baseX + 7*p, baseY + 2*p + bobOffset, p, armorDark);
+    this.pixel(ctx, baseX + 8*p, baseY + 2*p + bobOffset, p, armor);
+    this.pixel(ctx, baseX + 9*p, baseY + 2*p + bobOffset, p, armor);
+    this.pixel(ctx, baseX + 10*p, baseY + 2*p + bobOffset, p, armor);
+    this.pixel(ctx, baseX + 11*p, baseY + 2*p + bobOffset, p, armorDark);
+
+    // Cape (flowing behind)
+    this.pixel(ctx, baseX + 5*p, baseY + p + bobOffset, p, cape);
+    this.pixel(ctx, baseX + 4*p, baseY + 2*p + bobOffset, p, cape);
+    this.pixel(ctx, baseX + 5*p, baseY + 2*p + bobOffset, p, cape);
+
+    // Legs on horse
+    this.pixel(ctx, baseX + 7*p, baseY + 3*p + bobOffset, p, armorDark);
+    this.pixel(ctx, baseX + 11*p, baseY + 3*p + bobOffset, p, armorDark);
+
+    // === HORSE ===
+    // Horse head (facing right)
+    this.pixel(ctx, baseX + 14*p, baseY + 3*p + bobOffset, p, horseLight);
+    this.pixel(ctx, baseX + 15*p, baseY + 3*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 16*p, baseY + 3*p + bobOffset, p, horseDark);
+
+    this.pixel(ctx, baseX + 14*p, baseY + 4*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 15*p, baseY + 4*p + bobOffset, p, horseLight);
+    this.pixel(ctx, baseX + 16*p, baseY + 4*p + bobOffset, p, horseDark);
+    this.pixel(ctx, baseX + 17*p, baseY + 4*p + bobOffset, p, horseDark);
+
+    // Horse eye
+    this.pixel(ctx, baseX + 16*p, baseY + 3*p + bobOffset, p, '#111');
+
+    // Horse mane
+    this.pixel(ctx, baseX + 13*p, baseY + 2*p + bobOffset, p, mane);
+    this.pixel(ctx, baseX + 13*p, baseY + 3*p + bobOffset, p, mane);
+    this.pixel(ctx, baseX + 14*p, baseY + 2*p + bobOffset, p, mane);
+
+    // Horse body
+    this.pixel(ctx, baseX + 6*p, baseY + 4*p + bobOffset, p, horseDark);
+    this.pixel(ctx, baseX + 7*p, baseY + 4*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 8*p, baseY + 4*p + bobOffset, p, horseLight);
+    this.pixel(ctx, baseX + 9*p, baseY + 4*p + bobOffset, p, horseLight);
+    this.pixel(ctx, baseX + 10*p, baseY + 4*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 11*p, baseY + 4*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 12*p, baseY + 4*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 13*p, baseY + 4*p + bobOffset, p, horseLight);
+
+    this.pixel(ctx, baseX + 6*p, baseY + 5*p + bobOffset, p, horseDark);
+    this.pixel(ctx, baseX + 7*p, baseY + 5*p + bobOffset, p, horseLight);
+    this.pixel(ctx, baseX + 8*p, baseY + 5*p + bobOffset, p, horseLight);
+    this.pixel(ctx, baseX + 9*p, baseY + 5*p + bobOffset, p, horseLight);
+    this.pixel(ctx, baseX + 10*p, baseY + 5*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 11*p, baseY + 5*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 12*p, baseY + 5*p + bobOffset, p, horseDark);
+
+    // Saddle
+    this.pixel(ctx, baseX + 8*p, baseY + 3*p + bobOffset, p, armorDark);
+    this.pixel(ctx, baseX + 9*p, baseY + 3*p + bobOffset, p, armor);
+    this.pixel(ctx, baseX + 10*p, baseY + 3*p + bobOffset, p, armorDark);
+
+    // Horse legs (animated)
+    const legOffset = frame % 2 === 0 ? 0 : p;
+    // Front legs
+    this.pixel(ctx, baseX + 12*p, baseY + 6*p + bobOffset + legOffset, p, horseDark);
+    this.pixel(ctx, baseX + 12*p, baseY + 7*p + bobOffset + legOffset, p, horse);
+    this.pixel(ctx, baseX + 12*p, baseY + 8*p + bobOffset + legOffset, p, '#333');
+
+    this.pixel(ctx, baseX + 13*p, baseY + 6*p + bobOffset - legOffset, p, horseDark);
+    this.pixel(ctx, baseX + 13*p, baseY + 7*p + bobOffset - legOffset, p, horse);
+    this.pixel(ctx, baseX + 13*p, baseY + 8*p + bobOffset - legOffset, p, '#333');
+
+    // Back legs
+    this.pixel(ctx, baseX + 6*p, baseY + 6*p + bobOffset - legOffset, p, horseDark);
+    this.pixel(ctx, baseX + 6*p, baseY + 7*p + bobOffset - legOffset, p, horse);
+    this.pixel(ctx, baseX + 6*p, baseY + 8*p + bobOffset - legOffset, p, '#333');
+
+    this.pixel(ctx, baseX + 7*p, baseY + 6*p + bobOffset + legOffset, p, horseDark);
+    this.pixel(ctx, baseX + 7*p, baseY + 7*p + bobOffset + legOffset, p, horse);
+    this.pixel(ctx, baseX + 7*p, baseY + 8*p + bobOffset + legOffset, p, '#333');
+
+    // Horse tail
+    this.pixel(ctx, baseX + 5*p, baseY + 4*p + bobOffset, p, mane);
+    this.pixel(ctx, baseX + 4*p, baseY + 5*p + bobOffset, p, mane);
+    this.pixel(ctx, baseX + 4*p, baseY + 6*p + bobOffset, p, mane);
+  }
+
+  private static drawHorsemanLeft(ctx: CanvasRenderingContext2D, x: number, y: number, p: number, bobOffset: number, frame: number,
+    skin: string, armor: string, armorDark: string, armorLight: string, cape: string,
+    horse: string, horseDark: string, horseLight: string, mane: string, crown: string, crownDark: string): void {
+    const baseX = x - 8 * p;
+    const baseY = y - 10 * p;
+
+    // === RIDER ===
+    // Crown
+    this.pixel(ctx, baseX + 5*p, baseY - p + bobOffset, p, crownDark);
+    this.pixel(ctx, baseX + 6*p, baseY - 2*p + bobOffset, p, crown);
+    this.pixel(ctx, baseX + 7*p, baseY - p + bobOffset, p, crown);
+    this.pixel(ctx, baseX + 8*p, baseY - 2*p + bobOffset, p, crown);
+    this.pixel(ctx, baseX + 9*p, baseY - p + bobOffset, p, crownDark);
+
+    // Head
+    this.pixel(ctx, baseX + 6*p, baseY + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 7*p, baseY + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 8*p, baseY + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 6*p, baseY + bobOffset, p, '#333'); // Eye
+
+    // Body/Armor
+    this.pixel(ctx, baseX + 5*p, baseY + p + bobOffset, p, armorDark);
+    this.pixel(ctx, baseX + 6*p, baseY + p + bobOffset, p, armor);
+    this.pixel(ctx, baseX + 7*p, baseY + p + bobOffset, p, armorLight);
+    this.pixel(ctx, baseX + 8*p, baseY + p + bobOffset, p, armor);
+    this.pixel(ctx, baseX + 9*p, baseY + p + bobOffset, p, armorDark);
+
+    this.pixel(ctx, baseX + 5*p, baseY + 2*p + bobOffset, p, armorDark);
+    this.pixel(ctx, baseX + 6*p, baseY + 2*p + bobOffset, p, armor);
+    this.pixel(ctx, baseX + 7*p, baseY + 2*p + bobOffset, p, armor);
+    this.pixel(ctx, baseX + 8*p, baseY + 2*p + bobOffset, p, armor);
+    this.pixel(ctx, baseX + 9*p, baseY + 2*p + bobOffset, p, armorDark);
+
+    // Cape (flowing behind)
+    this.pixel(ctx, baseX + 11*p, baseY + p + bobOffset, p, cape);
+    this.pixel(ctx, baseX + 11*p, baseY + 2*p + bobOffset, p, cape);
+    this.pixel(ctx, baseX + 12*p, baseY + 2*p + bobOffset, p, cape);
+
+    // Legs on horse
+    this.pixel(ctx, baseX + 5*p, baseY + 3*p + bobOffset, p, armorDark);
+    this.pixel(ctx, baseX + 9*p, baseY + 3*p + bobOffset, p, armorDark);
+
+    // === HORSE ===
+    // Horse head (facing left)
+    this.pixel(ctx, baseX + p, baseY + 3*p + bobOffset, p, horseDark);
+    this.pixel(ctx, baseX + 2*p, baseY + 3*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 3*p, baseY + 3*p + bobOffset, p, horseLight);
+
+    this.pixel(ctx, baseX, baseY + 4*p + bobOffset, p, horseDark);
+    this.pixel(ctx, baseX + p, baseY + 4*p + bobOffset, p, horseDark);
+    this.pixel(ctx, baseX + 2*p, baseY + 4*p + bobOffset, p, horseLight);
+    this.pixel(ctx, baseX + 3*p, baseY + 4*p + bobOffset, p, horse);
+
+    // Horse eye
+    this.pixel(ctx, baseX + p, baseY + 3*p + bobOffset, p, '#111');
+
+    // Horse mane
+    this.pixel(ctx, baseX + 3*p, baseY + 2*p + bobOffset, p, mane);
+    this.pixel(ctx, baseX + 4*p, baseY + 2*p + bobOffset, p, mane);
+    this.pixel(ctx, baseX + 4*p, baseY + 3*p + bobOffset, p, mane);
+
+    // Horse body
+    this.pixel(ctx, baseX + 4*p, baseY + 4*p + bobOffset, p, horseLight);
+    this.pixel(ctx, baseX + 5*p, baseY + 4*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 6*p, baseY + 4*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 7*p, baseY + 4*p + bobOffset, p, horseLight);
+    this.pixel(ctx, baseX + 8*p, baseY + 4*p + bobOffset, p, horseLight);
+    this.pixel(ctx, baseX + 9*p, baseY + 4*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 10*p, baseY + 4*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 11*p, baseY + 4*p + bobOffset, p, horseDark);
+
+    this.pixel(ctx, baseX + 5*p, baseY + 5*p + bobOffset, p, horseDark);
+    this.pixel(ctx, baseX + 6*p, baseY + 5*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 7*p, baseY + 5*p + bobOffset, p, horseLight);
+    this.pixel(ctx, baseX + 8*p, baseY + 5*p + bobOffset, p, horseLight);
+    this.pixel(ctx, baseX + 9*p, baseY + 5*p + bobOffset, p, horseLight);
+    this.pixel(ctx, baseX + 10*p, baseY + 5*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 11*p, baseY + 5*p + bobOffset, p, horseDark);
+
+    // Saddle
+    this.pixel(ctx, baseX + 6*p, baseY + 3*p + bobOffset, p, armorDark);
+    this.pixel(ctx, baseX + 7*p, baseY + 3*p + bobOffset, p, armor);
+    this.pixel(ctx, baseX + 8*p, baseY + 3*p + bobOffset, p, armorDark);
+
+    // Horse legs (animated)
+    const legOffset = frame % 2 === 0 ? 0 : p;
+    // Front legs
+    this.pixel(ctx, baseX + 4*p, baseY + 6*p + bobOffset + legOffset, p, horseDark);
+    this.pixel(ctx, baseX + 4*p, baseY + 7*p + bobOffset + legOffset, p, horse);
+    this.pixel(ctx, baseX + 4*p, baseY + 8*p + bobOffset + legOffset, p, '#333');
+
+    this.pixel(ctx, baseX + 5*p, baseY + 6*p + bobOffset - legOffset, p, horseDark);
+    this.pixel(ctx, baseX + 5*p, baseY + 7*p + bobOffset - legOffset, p, horse);
+    this.pixel(ctx, baseX + 5*p, baseY + 8*p + bobOffset - legOffset, p, '#333');
+
+    // Back legs
+    this.pixel(ctx, baseX + 10*p, baseY + 6*p + bobOffset - legOffset, p, horseDark);
+    this.pixel(ctx, baseX + 10*p, baseY + 7*p + bobOffset - legOffset, p, horse);
+    this.pixel(ctx, baseX + 10*p, baseY + 8*p + bobOffset - legOffset, p, '#333');
+
+    this.pixel(ctx, baseX + 11*p, baseY + 6*p + bobOffset + legOffset, p, horseDark);
+    this.pixel(ctx, baseX + 11*p, baseY + 7*p + bobOffset + legOffset, p, horse);
+    this.pixel(ctx, baseX + 11*p, baseY + 8*p + bobOffset + legOffset, p, '#333');
+
+    // Horse tail
+    this.pixel(ctx, baseX + 12*p, baseY + 4*p + bobOffset, p, mane);
+    this.pixel(ctx, baseX + 13*p, baseY + 5*p + bobOffset, p, mane);
+    this.pixel(ctx, baseX + 13*p, baseY + 6*p + bobOffset, p, mane);
+  }
+
+  private static drawHorsemanUp(ctx: CanvasRenderingContext2D, x: number, y: number, p: number, bobOffset: number, frame: number,
+    _skin: string, _armor: string, _armorDark: string, _armorLight: string, cape: string,
+    horse: string, horseDark: string, horseLight: string, mane: string, crown: string, crownDark: string): void {
+    const baseX = x - 5 * p;
+    const baseY = y - 10 * p;
+
+    // === HORSE (from behind, going up) ===
+    // Horse ears
+    this.pixel(ctx, baseX + 3*p, baseY + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 7*p, baseY + bobOffset, p, horse);
+
+    // Horse head (back of head)
+    this.pixel(ctx, baseX + 4*p, baseY + p + bobOffset, p, horseDark);
+    this.pixel(ctx, baseX + 5*p, baseY + p + bobOffset, p, mane);
+    this.pixel(ctx, baseX + 6*p, baseY + p + bobOffset, p, horseDark);
+
+    // Horse mane
+    this.pixel(ctx, baseX + 5*p, baseY + 2*p + bobOffset, p, mane);
+
+    // === RIDER ===
+    // Crown (back view)
+    this.pixel(ctx, baseX + 4*p, baseY + 2*p + bobOffset, p, crownDark);
+    this.pixel(ctx, baseX + 5*p, baseY + p + bobOffset, p, crown);
+    this.pixel(ctx, baseX + 6*p, baseY + 2*p + bobOffset, p, crownDark);
+
+    // Head (back)
+    this.pixel(ctx, baseX + 4*p, baseY + 3*p + bobOffset, p, '#5c3317');
+    this.pixel(ctx, baseX + 5*p, baseY + 3*p + bobOffset, p, '#5c3317');
+    this.pixel(ctx, baseX + 6*p, baseY + 3*p + bobOffset, p, '#5c3317');
+
+    // Cape (prominent from behind)
+    this.pixel(ctx, baseX + 3*p, baseY + 4*p + bobOffset, p, cape);
+    this.pixel(ctx, baseX + 4*p, baseY + 4*p + bobOffset, p, cape);
+    this.pixel(ctx, baseX + 5*p, baseY + 4*p + bobOffset, p, cape);
+    this.pixel(ctx, baseX + 6*p, baseY + 4*p + bobOffset, p, cape);
+    this.pixel(ctx, baseX + 7*p, baseY + 4*p + bobOffset, p, cape);
+
+    this.pixel(ctx, baseX + 3*p, baseY + 5*p + bobOffset, p, cape);
+    this.pixel(ctx, baseX + 4*p, baseY + 5*p + bobOffset, p, cape);
+    this.pixel(ctx, baseX + 5*p, baseY + 5*p + bobOffset, p, cape);
+    this.pixel(ctx, baseX + 6*p, baseY + 5*p + bobOffset, p, cape);
+    this.pixel(ctx, baseX + 7*p, baseY + 5*p + bobOffset, p, cape);
+
+    // Horse body (from behind)
+    this.pixel(ctx, baseX + 2*p, baseY + 6*p + bobOffset, p, horseDark);
+    this.pixel(ctx, baseX + 3*p, baseY + 6*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 4*p, baseY + 6*p + bobOffset, p, horseLight);
+    this.pixel(ctx, baseX + 5*p, baseY + 6*p + bobOffset, p, horseLight);
+    this.pixel(ctx, baseX + 6*p, baseY + 6*p + bobOffset, p, horseLight);
+    this.pixel(ctx, baseX + 7*p, baseY + 6*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 8*p, baseY + 6*p + bobOffset, p, horseDark);
+
+    this.pixel(ctx, baseX + 2*p, baseY + 7*p + bobOffset, p, horseDark);
+    this.pixel(ctx, baseX + 3*p, baseY + 7*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 4*p, baseY + 7*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 5*p, baseY + 7*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 6*p, baseY + 7*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 7*p, baseY + 7*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 8*p, baseY + 7*p + bobOffset, p, horseDark);
+
+    // Horse legs (animated)
+    const legOffset = frame % 2 === 0 ? 0 : p;
+    this.pixel(ctx, baseX + 2*p, baseY + 8*p + bobOffset + legOffset, p, horseDark);
+    this.pixel(ctx, baseX + 2*p, baseY + 9*p + bobOffset + legOffset, p, '#333');
+
+    this.pixel(ctx, baseX + 4*p, baseY + 8*p + bobOffset - legOffset, p, horse);
+    this.pixel(ctx, baseX + 4*p, baseY + 9*p + bobOffset - legOffset, p, '#333');
+
+    this.pixel(ctx, baseX + 6*p, baseY + 8*p + bobOffset - legOffset, p, horse);
+    this.pixel(ctx, baseX + 6*p, baseY + 9*p + bobOffset - legOffset, p, '#333');
+
+    this.pixel(ctx, baseX + 8*p, baseY + 8*p + bobOffset + legOffset, p, horseDark);
+    this.pixel(ctx, baseX + 8*p, baseY + 9*p + bobOffset + legOffset, p, '#333');
+
+    // Horse tail
+    this.pixel(ctx, baseX + 5*p, baseY + 8*p + bobOffset, p, mane);
+    this.pixel(ctx, baseX + 5*p, baseY + 9*p + bobOffset, p, mane);
+    this.pixel(ctx, baseX + 5*p, baseY + 10*p + bobOffset, p, mane);
+  }
+
+  private static drawHorsemanDown(ctx: CanvasRenderingContext2D, x: number, y: number, p: number, bobOffset: number, frame: number,
+    skin: string, armor: string, armorDark: string, armorLight: string, _cape: string,
+    horse: string, horseDark: string, horseLight: string, mane: string, crown: string, crownDark: string): void {
+    const baseX = x - 5 * p;
+    const baseY = y - 10 * p;
+
+    // === RIDER ===
+    // Crown
+    this.pixel(ctx, baseX + 3*p, baseY + bobOffset, p, crownDark);
+    this.pixel(ctx, baseX + 4*p, baseY - p + bobOffset, p, crown);
+    this.pixel(ctx, baseX + 5*p, baseY + bobOffset, p, crown);
+    this.pixel(ctx, baseX + 6*p, baseY - p + bobOffset, p, crown);
+    this.pixel(ctx, baseX + 7*p, baseY + bobOffset, p, crownDark);
+
+    // Head (front view)
+    this.pixel(ctx, baseX + 4*p, baseY + p + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 5*p, baseY + p + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 6*p, baseY + p + bobOffset, p, skin);
+    // Eyes
+    this.pixel(ctx, baseX + 4*p, baseY + p + bobOffset, p, '#333');
+    this.pixel(ctx, baseX + 6*p, baseY + p + bobOffset, p, '#333');
+
+    // Body/Armor
+    this.pixel(ctx, baseX + 3*p, baseY + 2*p + bobOffset, p, armorDark);
+    this.pixel(ctx, baseX + 4*p, baseY + 2*p + bobOffset, p, armor);
+    this.pixel(ctx, baseX + 5*p, baseY + 2*p + bobOffset, p, armorLight);
+    this.pixel(ctx, baseX + 6*p, baseY + 2*p + bobOffset, p, armor);
+    this.pixel(ctx, baseX + 7*p, baseY + 2*p + bobOffset, p, armorDark);
+
+    this.pixel(ctx, baseX + 3*p, baseY + 3*p + bobOffset, p, armorDark);
+    this.pixel(ctx, baseX + 4*p, baseY + 3*p + bobOffset, p, armor);
+    this.pixel(ctx, baseX + 5*p, baseY + 3*p + bobOffset, p, armor);
+    this.pixel(ctx, baseX + 6*p, baseY + 3*p + bobOffset, p, armor);
+    this.pixel(ctx, baseX + 7*p, baseY + 3*p + bobOffset, p, armorDark);
+
+    // Legs on saddle
+    this.pixel(ctx, baseX + 2*p, baseY + 4*p + bobOffset, p, armorDark);
+    this.pixel(ctx, baseX + 8*p, baseY + 4*p + bobOffset, p, armorDark);
+
+    // === HORSE ===
+    // Horse head (front)
+    this.pixel(ctx, baseX + 4*p, baseY + 8*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 5*p, baseY + 8*p + bobOffset, p, horseLight);
+    this.pixel(ctx, baseX + 6*p, baseY + 8*p + bobOffset, p, horse);
+
+    this.pixel(ctx, baseX + 4*p, baseY + 9*p + bobOffset, p, horseDark);
+    this.pixel(ctx, baseX + 5*p, baseY + 9*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 6*p, baseY + 9*p + bobOffset, p, horseDark);
+
+    // Horse eyes
+    this.pixel(ctx, baseX + 4*p, baseY + 8*p + bobOffset, p, '#111');
+    this.pixel(ctx, baseX + 6*p, baseY + 8*p + bobOffset, p, '#111');
+
+    // Horse ears
+    this.pixel(ctx, baseX + 3*p, baseY + 7*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 7*p, baseY + 7*p + bobOffset, p, horse);
+
+    // Horse mane
+    this.pixel(ctx, baseX + 5*p, baseY + 7*p + bobOffset, p, mane);
+
+    // Saddle
+    this.pixel(ctx, baseX + 4*p, baseY + 4*p + bobOffset, p, armorDark);
+    this.pixel(ctx, baseX + 5*p, baseY + 4*p + bobOffset, p, armor);
+    this.pixel(ctx, baseX + 6*p, baseY + 4*p + bobOffset, p, armorDark);
+
+    // Horse body (front view)
+    this.pixel(ctx, baseX + 2*p, baseY + 5*p + bobOffset, p, horseDark);
+    this.pixel(ctx, baseX + 3*p, baseY + 5*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 4*p, baseY + 5*p + bobOffset, p, horseLight);
+    this.pixel(ctx, baseX + 5*p, baseY + 5*p + bobOffset, p, horseLight);
+    this.pixel(ctx, baseX + 6*p, baseY + 5*p + bobOffset, p, horseLight);
+    this.pixel(ctx, baseX + 7*p, baseY + 5*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 8*p, baseY + 5*p + bobOffset, p, horseDark);
+
+    this.pixel(ctx, baseX + 2*p, baseY + 6*p + bobOffset, p, horseDark);
+    this.pixel(ctx, baseX + 3*p, baseY + 6*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 4*p, baseY + 6*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 5*p, baseY + 6*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 6*p, baseY + 6*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 7*p, baseY + 6*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 8*p, baseY + 6*p + bobOffset, p, horseDark);
+
+    this.pixel(ctx, baseX + 3*p, baseY + 7*p + bobOffset, p, horse);
+    this.pixel(ctx, baseX + 4*p, baseY + 7*p + bobOffset, p, horseLight);
+    this.pixel(ctx, baseX + 5*p, baseY + 7*p + bobOffset, p, horseLight);
+    this.pixel(ctx, baseX + 6*p, baseY + 7*p + bobOffset, p, horseLight);
+    this.pixel(ctx, baseX + 7*p, baseY + 7*p + bobOffset, p, horse);
+
+    // Horse legs (animated) - front view shows 2 legs
+    const legOffset = frame % 2 === 0 ? 0 : p;
+    this.pixel(ctx, baseX + 3*p, baseY + 10*p + bobOffset + legOffset, p, horseDark);
+    this.pixel(ctx, baseX + 3*p, baseY + 11*p + bobOffset + legOffset, p, '#333');
+
+    this.pixel(ctx, baseX + 7*p, baseY + 10*p + bobOffset - legOffset, p, horseDark);
+    this.pixel(ctx, baseX + 7*p, baseY + 11*p + bobOffset - legOffset, p, '#333');
+  }
 }

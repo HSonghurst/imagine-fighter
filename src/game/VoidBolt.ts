@@ -2,21 +2,21 @@ import { Fighter } from './Fighter';
 import { SoundManager } from './SoundManager';
 import type { Team } from './types';
 
-export class Fireball {
+export class VoidBolt {
   x: number;
   y: number;
   targetX: number;
   targetY: number;
-  speed: number = 5;
+  speed: number = 6;
   damage: number;
   team: Team;
   target: Fighter;
   shooter: Fighter | null;
   isDead: boolean = false;
   angle: number;
-  explosionRadius: number = 30;
-  isExploding: boolean = false;
-  explosionFrame: number = 0;
+  impactRadius: number = 25;
+  isImpacting: boolean = false;
+  impactFrame: number = 0;
 
   constructor(x: number, y: number, target: Fighter, damage: number, team: Team, shooter?: Fighter) {
     this.x = x;
@@ -36,9 +36,9 @@ export class Fireball {
   update(enemies: Fighter[]): void {
     if (this.isDead) return;
 
-    if (this.isExploding) {
-      this.explosionFrame++;
-      if (this.explosionFrame > 15) {
+    if (this.isImpacting) {
+      this.impactFrame++;
+      if (this.impactFrame > 12) {
         this.isDead = true;
       }
       return;
@@ -59,8 +59,8 @@ export class Fireball {
     const dy = this.targetY - this.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
-    if (distance < 20) {
-      this.explode(enemies);
+    if (distance < 18) {
+      this.impact(enemies);
     }
 
     if (this.x < -50 || this.x > 1000 || this.y < -50 || this.y > 700) {
@@ -68,8 +68,8 @@ export class Fireball {
     }
   }
 
-  private explode(enemies: Fighter[]): void {
-    this.isExploding = true;
+  private impact(enemies: Fighter[]): void {
+    this.isImpacting = true;
     SoundManager.playExplosion();
     const modifiers = this.shooter?.modifiers;
 
@@ -80,9 +80,9 @@ export class Fireball {
       const dy = enemy.y - this.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      if (dist <= this.explosionRadius) {
-        // Damage falls off with distance (min 70% at edge)
-        const damageMultiplier = 1 - (dist / this.explosionRadius) * 0.3;
+      if (dist <= this.impactRadius) {
+        // Damage falls off with distance (min 75% at edge)
+        const damageMultiplier = 1 - (dist / this.impactRadius) * 0.25;
         let finalDamage = Math.floor(this.damage * damageMultiplier);
         let isCrit = false;
 
@@ -96,7 +96,12 @@ export class Fireball {
 
         enemy.takeDamage(finalDamage, this.shooter || undefined, isCrit);
 
-        // Apply lifesteal only (Fireball is currently unused but kept for reference)
+        // Mages always apply void DoT on hit
+        const baseVoidDamage = 4;
+        const voidMultiplier = modifiers?.voidDoTMultiplier || 1;
+        enemy.statusEffects.void += baseVoidDamage * voidMultiplier;
+
+        // Lifesteal
         if (modifiers && modifiers.lifestealPercent > 1 && this.shooter) {
           const lifestealPercent = modifiers.lifestealPercent - 1;
           const healAmount = finalDamage * lifestealPercent;
@@ -109,56 +114,59 @@ export class Fireball {
   draw(ctx: CanvasRenderingContext2D): void {
     if (this.isDead) return;
 
-    if (this.isExploding) {
-      // Draw explosion
-      const progress = this.explosionFrame / 15;
-      const radius = this.explosionRadius * progress;
+    if (this.isImpacting) {
+      // Draw void implosion effect
+      const progress = this.impactFrame / 12;
+      const radius = this.impactRadius * (1 - progress * 0.3);
       const alpha = 1 - progress;
 
-      // Outer radius indicator ring
+      // Outer void ring
       ctx.beginPath();
-      ctx.arc(this.x, this.y, this.explosionRadius, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(255, 150, 0, ${alpha * 0.8})`;
+      ctx.arc(this.x, this.y, this.impactRadius, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(124, 58, 237, ${alpha * 0.6})`;
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Explosion fill
+      // Void fill (dark purple)
       ctx.beginPath();
       ctx.arc(this.x, this.y, radius, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255, 100, 0, ${alpha * 0.6})`;
+      ctx.fillStyle = `rgba(88, 28, 135, ${alpha * 0.5})`;
       ctx.fill();
 
+      // Inner void core
       ctx.beginPath();
-      ctx.arc(this.x, this.y, radius * 0.6, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255, 200, 0, ${alpha * 0.8})`;
+      ctx.arc(this.x, this.y, radius * 0.5, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(139, 92, 246, ${alpha * 0.7})`;
       ctx.fill();
 
+      // Center bright point
       ctx.beginPath();
-      ctx.arc(this.x, this.y, radius * 0.3, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255, 255, 200, ${alpha})`;
+      ctx.arc(this.x, this.y, radius * 0.2, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(196, 181, 253, ${alpha})`;
       ctx.fill();
       return;
     }
 
-    // Draw fireball (smaller)
+    // Draw void bolt
     ctx.save();
     ctx.translate(this.x, this.y);
 
-    // Outer glow
-    const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, 6);
-    gradient.addColorStop(0, 'rgba(255, 200, 0, 1)');
-    gradient.addColorStop(0.5, 'rgba(255, 100, 0, 0.8)');
-    gradient.addColorStop(1, 'rgba(255, 50, 0, 0)');
+    // Outer glow (purple)
+    const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, 7);
+    gradient.addColorStop(0, 'rgba(196, 181, 253, 1)');
+    gradient.addColorStop(0.4, 'rgba(139, 92, 246, 0.8)');
+    gradient.addColorStop(0.7, 'rgba(124, 58, 237, 0.5)');
+    gradient.addColorStop(1, 'rgba(88, 28, 135, 0)');
 
     ctx.beginPath();
-    ctx.arc(0, 0, 6, 0, Math.PI * 2);
+    ctx.arc(0, 0, 7, 0, Math.PI * 2);
     ctx.fillStyle = gradient;
     ctx.fill();
 
-    // Inner core
+    // Inner core (bright purple/white)
     ctx.beginPath();
-    ctx.arc(0, 0, 2, 0, Math.PI * 2);
-    ctx.fillStyle = '#fff';
+    ctx.arc(0, 0, 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#e9d5ff';
     ctx.fill();
 
     ctx.restore();
