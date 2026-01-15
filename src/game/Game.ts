@@ -7,6 +7,7 @@ import { Knight } from './Knight';
 import { Healer } from './Healer';
 import { XPOrb } from './XPOrb';
 import { Tower } from './Tower';
+import { Boss } from './Boss';
 import { Building, BUILDING_TYPES } from './Building';
 import { ALL_CARDS, TeamModifiers, pickRandomRarity } from './Card';
 import { SoundManager } from './SoundManager';
@@ -51,6 +52,7 @@ export class Game {
   private singlePlayerMode: boolean = false;
   private player: Player | null = null;
   private backgroundImage: HTMLImageElement | null = null;
+  private topBoss: Boss | null = null;
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -110,6 +112,7 @@ export class Game {
     this.bottomBuildings = new Array(10).fill(null);
     this.topTower = null;
     this.bottomTower = null;
+    this.topBoss = null;
     this.player = null;
     this.xpOrbs = [];
     this.topKills = 0;
@@ -245,19 +248,34 @@ export class Game {
     // Update game timer
     this.gameTime += deltaTime;
 
-    // Check win condition
-    if (this.topTower?.isDead) {
+    // Spawn enemy boss after 3 minutes
+    if (this.gameTime >= 180000 && !this.topBoss) {
+      this.topBoss = new Boss('top', this.canvas.width / 2, this.canvas.height);
+      SoundManager.playExplosion();
+    }
+
+    // Check win condition - player destroys enemy tower (before boss spawns) or kills boss
+    if (this.topTower?.isDead && !this.topBoss) {
       this.running = false;
       SoundManager.playVictory();
       this.onWinnerCallback('bottom');
       return;
     }
+    if (this.topBoss?.isDead) {
+      this.running = false;
+      SoundManager.playVictory();
+      this.onWinnerCallback('bottom');
+      return;
+    }
+
+    // Check lose condition - enemy destroys player's tower
     if (this.bottomTower?.isDead) {
       this.running = false;
       SoundManager.playVictory();
       this.onWinnerCallback('top');
       return;
     }
+
     // Player death = game over (top team wins)
     if (this.player?.isDead) {
       this.running = false;
@@ -274,11 +292,13 @@ export class Game {
     const aliveTop = this.topTeam.filter(f => !f.isDead);
     const aliveBottom = this.bottomTeam.filter(f => !f.isDead);
 
-    // Create target lists that include towers and player
+    // Create target lists that include towers, bosses, and player
     const topTargets: (Fighter | Tower)[] = [...aliveTop];
     const bottomTargets: (Fighter | Tower)[] = [...aliveBottom];
     if (this.topTower && !this.topTower.isDead) topTargets.push(this.topTower as unknown as Fighter);
     if (this.bottomTower && !this.bottomTower.isDead) bottomTargets.push(this.bottomTower as unknown as Fighter);
+    // Add enemy boss to targets (only top/enemy team has a boss)
+    if (this.topBoss && !this.topBoss.isDead) topTargets.push(this.topBoss as Fighter);
     // Add player to targets (player is on bottom team, so top team can target them)
     if (this.player && !this.player.isDead) {
       bottomTargets.push(this.player as unknown as Fighter);
@@ -297,6 +317,11 @@ export class Game {
     }
     if (this.bottomTower && !this.bottomTower.isDead) {
       this.bottomTower.update(aliveTop);
+    }
+
+    // Update enemy boss
+    if (this.topBoss && !this.topBoss.isDead) {
+      this.topBoss.update(bottomTargets as Fighter[], deltaTime, aliveTop);
     }
 
     // Update player (pass top team as enemies since player is on bottom team)
@@ -634,6 +659,9 @@ export class Game {
     // Draw towers
     if (this.topTower) this.topTower.draw(ctx);
     if (this.bottomTower) this.bottomTower.draw(ctx);
+
+    // Draw enemy boss
+    if (this.topBoss) this.topBoss.draw(ctx);
 
     // Draw fighters
     for (const fighter of this.topTeam) {

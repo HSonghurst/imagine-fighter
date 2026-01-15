@@ -713,4 +713,144 @@ export class SpriteRenderer {
     this.pixel(ctx, baseX + 7*p, baseY + 10*p + bobOffset - legOffset, p, horseDark);
     this.pixel(ctx, baseX + 7*p, baseY + 11*p + bobOffset - legOffset, p, '#333');
   }
+
+  static drawBoss(ctx: CanvasRenderingContext2D, x: number, y: number, _team: Team, frame: number): void {
+    const p = 3; // Bigger pixel size for ogre
+    const baseX = x - 6 * p;
+    const baseY = y - 10 * p;
+    const bobOffset = Math.sin(frame * Math.PI / 2) * 2;
+
+    // Ogre colors - green skin
+    const skin = '#4a7c3f';
+    const skinDark = '#3d6634';
+    const skinLight = '#5a9c4f';
+    const belly = '#5a8c4f';
+    const eyes = '#ffff00';
+    const tusk = '#f5f5dc';
+    const loincloth = '#8B4513';
+    const club = '#6b4423';
+    const clubDark = '#4a2f18';
+
+    // Ears (pointy)
+    this.pixel(ctx, baseX + 0*p, baseY + 1*p + bobOffset, p, skinDark);
+    this.pixel(ctx, baseX + 10*p, baseY + 1*p + bobOffset, p, skinDark);
+
+    // Head (big and round)
+    this.pixel(ctx, baseX + 2*p, baseY + 0*p + bobOffset, p, skinDark);
+    this.pixel(ctx, baseX + 3*p, baseY + 0*p + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 4*p, baseY + 0*p + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 5*p, baseY + 0*p + bobOffset, p, skinLight);
+    this.pixel(ctx, baseX + 6*p, baseY + 0*p + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 7*p, baseY + 0*p + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 8*p, baseY + 0*p + bobOffset, p, skinDark);
+
+    // Face row 1
+    this.pixel(ctx, baseX + 1*p, baseY + 1*p + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 2*p, baseY + 1*p + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 3*p, baseY + 1*p + bobOffset, p, skinLight);
+    this.pixel(ctx, baseX + 4*p, baseY + 1*p + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 5*p, baseY + 1*p + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 6*p, baseY + 1*p + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 7*p, baseY + 1*p + bobOffset, p, skinLight);
+    this.pixel(ctx, baseX + 8*p, baseY + 1*p + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 9*p, baseY + 1*p + bobOffset, p, skin);
+
+    // Face with eyes
+    this.pixel(ctx, baseX + 1*p, baseY + 2*p + bobOffset, p, skinDark);
+    this.pixel(ctx, baseX + 2*p, baseY + 2*p + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 3*p, baseY + 2*p + bobOffset, p, eyes);
+    this.pixel(ctx, baseX + 4*p, baseY + 2*p + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 5*p, baseY + 2*p + bobOffset, p, skinDark);
+    this.pixel(ctx, baseX + 6*p, baseY + 2*p + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 7*p, baseY + 2*p + bobOffset, p, eyes);
+    this.pixel(ctx, baseX + 8*p, baseY + 2*p + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 9*p, baseY + 2*p + bobOffset, p, skinDark);
+
+    // Lower face with tusks
+    this.pixel(ctx, baseX + 2*p, baseY + 3*p + bobOffset, p, tusk);
+    this.pixel(ctx, baseX + 3*p, baseY + 3*p + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 4*p, baseY + 3*p + bobOffset, p, skinDark);
+    this.pixel(ctx, baseX + 5*p, baseY + 3*p + bobOffset, p, skinDark);
+    this.pixel(ctx, baseX + 6*p, baseY + 3*p + bobOffset, p, skinDark);
+    this.pixel(ctx, baseX + 7*p, baseY + 3*p + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 8*p, baseY + 3*p + bobOffset, p, tusk);
+
+    // Neck (thick)
+    this.pixel(ctx, baseX + 3*p, baseY + 4*p + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 4*p, baseY + 4*p + bobOffset, p, skinLight);
+    this.pixel(ctx, baseX + 5*p, baseY + 4*p + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 6*p, baseY + 4*p + bobOffset, p, skinLight);
+    this.pixel(ctx, baseX + 7*p, baseY + 4*p + bobOffset, p, skin);
+
+    // Shoulders (massive)
+    this.pixel(ctx, baseX + 0*p, baseY + 5*p + bobOffset, p, skinDark);
+    this.pixel(ctx, baseX + 1*p, baseY + 5*p + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 2*p, baseY + 5*p + bobOffset, p, skinLight);
+    this.pixel(ctx, baseX + 3*p, baseY + 5*p + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 4*p, baseY + 5*p + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 5*p, baseY + 5*p + bobOffset, p, belly);
+    this.pixel(ctx, baseX + 6*p, baseY + 5*p + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 7*p, baseY + 5*p + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 8*p, baseY + 5*p + bobOffset, p, skinLight);
+    this.pixel(ctx, baseX + 9*p, baseY + 5*p + bobOffset, p, skin);
+    this.pixel(ctx, baseX + 10*p, baseY + 5*p + bobOffset, p, skinDark);
+
+    // Big belly
+    for (let row = 6; row <= 8; row++) {
+      this.pixel(ctx, baseX + 1*p, baseY + row*p + bobOffset, p, skinDark);
+      this.pixel(ctx, baseX + 2*p, baseY + row*p + bobOffset, p, skin);
+      this.pixel(ctx, baseX + 3*p, baseY + row*p + bobOffset, p, belly);
+      this.pixel(ctx, baseX + 4*p, baseY + row*p + bobOffset, p, belly);
+      this.pixel(ctx, baseX + 5*p, baseY + row*p + bobOffset, p, skinLight);
+      this.pixel(ctx, baseX + 6*p, baseY + row*p + bobOffset, p, belly);
+      this.pixel(ctx, baseX + 7*p, baseY + row*p + bobOffset, p, belly);
+      this.pixel(ctx, baseX + 8*p, baseY + row*p + bobOffset, p, skin);
+      this.pixel(ctx, baseX + 9*p, baseY + row*p + bobOffset, p, skinDark);
+    }
+
+    // Loincloth
+    this.pixel(ctx, baseX + 3*p, baseY + 9*p + bobOffset, p, loincloth);
+    this.pixel(ctx, baseX + 4*p, baseY + 9*p + bobOffset, p, loincloth);
+    this.pixel(ctx, baseX + 5*p, baseY + 9*p + bobOffset, p, loincloth);
+    this.pixel(ctx, baseX + 6*p, baseY + 9*p + bobOffset, p, loincloth);
+    this.pixel(ctx, baseX + 7*p, baseY + 9*p + bobOffset, p, loincloth);
+
+    // Legs (thick)
+    const legOffset = frame % 2 === 0 ? 0 : p;
+    this.pixel(ctx, baseX + 3*p, baseY + 10*p + bobOffset + legOffset, p, skin);
+    this.pixel(ctx, baseX + 4*p, baseY + 10*p + bobOffset + legOffset, p, skinDark);
+    this.pixel(ctx, baseX + 3*p, baseY + 11*p + bobOffset + legOffset, p, skinDark);
+    this.pixel(ctx, baseX + 4*p, baseY + 11*p + bobOffset + legOffset, p, skin);
+    this.pixel(ctx, baseX + 3*p, baseY + 12*p + bobOffset + legOffset, p, '#333');
+    this.pixel(ctx, baseX + 4*p, baseY + 12*p + bobOffset + legOffset, p, '#333');
+
+    this.pixel(ctx, baseX + 6*p, baseY + 10*p + bobOffset - legOffset, p, skinDark);
+    this.pixel(ctx, baseX + 7*p, baseY + 10*p + bobOffset - legOffset, p, skin);
+    this.pixel(ctx, baseX + 6*p, baseY + 11*p + bobOffset - legOffset, p, skin);
+    this.pixel(ctx, baseX + 7*p, baseY + 11*p + bobOffset - legOffset, p, skinDark);
+    this.pixel(ctx, baseX + 6*p, baseY + 12*p + bobOffset - legOffset, p, '#333');
+    this.pixel(ctx, baseX + 7*p, baseY + 12*p + bobOffset - legOffset, p, '#333');
+
+    // Arms (animated, holding club)
+    const armSwing = frame % 2 === 0 ? 0 : p;
+
+    // Left arm
+    this.pixel(ctx, baseX + 0*p, baseY + 6*p + bobOffset + armSwing, p, skin);
+    this.pixel(ctx, baseX + 0*p, baseY + 7*p + bobOffset + armSwing, p, skinDark);
+    this.pixel(ctx, baseX + 0*p, baseY + 8*p + bobOffset + armSwing, p, skin);
+
+    // Right arm with club
+    this.pixel(ctx, baseX + 10*p, baseY + 6*p + bobOffset - armSwing, p, skin);
+    this.pixel(ctx, baseX + 10*p, baseY + 7*p + bobOffset - armSwing, p, skinDark);
+    this.pixel(ctx, baseX + 10*p, baseY + 8*p + bobOffset - armSwing, p, skin);
+
+    // Club
+    this.pixel(ctx, baseX + 11*p, baseY + 5*p + bobOffset - armSwing, p, club);
+    this.pixel(ctx, baseX + 11*p, baseY + 6*p + bobOffset - armSwing, p, clubDark);
+    this.pixel(ctx, baseX + 11*p, baseY + 7*p + bobOffset - armSwing, p, club);
+    this.pixel(ctx, baseX + 11*p, baseY + 8*p + bobOffset - armSwing, p, clubDark);
+    this.pixel(ctx, baseX + 12*p, baseY + 4*p + bobOffset - armSwing, p, club);
+    this.pixel(ctx, baseX + 12*p, baseY + 5*p + bobOffset - armSwing, p, clubDark);
+    this.pixel(ctx, baseX + 12*p, baseY + 6*p + bobOffset - armSwing, p, club);
+  }
 }
