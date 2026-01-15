@@ -38,6 +38,7 @@ export class Game {
   private bottomLevel: number = 1;
   private running: boolean = false;
   private lastTime: number = 0;
+  private gameTime: number = 0; // Elapsed game time in ms
   private updateCountsCallback: () => void;
   private onWinnerCallback: (team: Team) => void;
   private onSelectionCallback: (team: Team, items: SelectionItem[], type: SelectionType) => void;
@@ -92,6 +93,7 @@ export class Game {
     this.bottomXP = 0;
     this.topLevel = 1;
     this.bottomLevel = 1;
+    this.gameTime = 0;
     this.topModifiers = new TeamModifiers();
     this.bottomModifiers = new TeamModifiers();
     this.topRespawnTimers = new Map();
@@ -215,6 +217,9 @@ export class Game {
   };
 
   private update(deltaTime: number): void {
+    // Update game timer
+    this.gameTime += deltaTime;
+
     // Check win condition
     if (this.topTower?.isDead) {
       this.running = false;
@@ -521,6 +526,30 @@ export class Game {
     // Draw XP bars
     this.drawXPBar('top');
     this.drawXPBar('bottom');
+
+    // Draw game clock
+    this.drawClock();
+  }
+
+  private drawClock(): void {
+    const ctx = this.ctx;
+    const totalSeconds = Math.floor(this.gameTime / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+    // Draw clock background
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    ctx.beginPath();
+    ctx.roundRect(this.canvas.width / 2 - 30, 2, 60, 20, 5);
+    ctx.fill();
+
+    // Draw time text
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 14px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(timeStr, this.canvas.width / 2, 12);
   }
 
   private drawBuildingSlots(): void {
