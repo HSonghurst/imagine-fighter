@@ -14,8 +14,8 @@ export class Archer extends Fighter {
     this.maxHealth = 80;
     this.baseSpeed = 0.5;
     this.speed = 0.5;
-    this.baseDamage = 45;
-    this.damage = 45;
+    this.baseDamage = 22;
+    this.damage = 22;
     this.baseAttackRange = 65;
     this.attackRange = 65;
     this.baseAttackCooldown = 1500;

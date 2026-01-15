@@ -15,8 +15,8 @@ export class Swordsman extends Fighter {
     this.maxHealth = 180;
     this.baseSpeed = 0.8;
     this.speed = 0.8;
-    this.baseDamage = 35;
-    this.damage = 35;
+    this.baseDamage = 17;
+    this.damage = 17;
     this.baseAttackRange = 11;
     this.attackRange = 11;
     this.baseAttackCooldown = 800;

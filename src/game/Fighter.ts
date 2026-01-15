@@ -52,8 +52,8 @@ export abstract class Fighter {
     this.maxHealth = 100;
     this.baseSpeed = 1;
     this.speed = 1;
-    this.baseDamage = 10;
-    this.damage = 10;
+    this.baseDamage = 5;
+    this.damage = 5;
     this.baseAttackRange = 40;
     this.attackRange = 40;
     this.baseAttackCooldown = 1000;

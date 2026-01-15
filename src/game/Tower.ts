@@ -16,7 +16,7 @@ export class Tower {
   // Attack properties - much more powerful
   attackRange: number = 150; // Long range
   attackCooldown: number = 400; // Fast attack
-  damage: number = 60; // High damage
+  damage: number = 30; // High damage
   lastAttackTime: number = 0;
   arrows: Arrow[] = [];
   // Dummy properties to be compatible with Fighter targeting

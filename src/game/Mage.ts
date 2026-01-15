@@ -27,8 +27,8 @@ export class Mage extends Fighter {
     this.maxHealth = 60;
     this.baseSpeed = 0.4;
     this.speed = 0.4;
-    this.baseDamage = 35;
-    this.damage = 35;
+    this.baseDamage = 17;
+    this.damage = 17;
     this.baseAttackRange = 60;
     this.attackRange = 60;
     this.baseAttackCooldown = 800;

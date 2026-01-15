@@ -16,8 +16,8 @@ export class Knight extends Fighter {
     this.maxHealth = 300;
     this.baseSpeed = 0.35;
     this.speed = 0.35;
-    this.baseDamage = 30;
-    this.damage = 30;
+    this.baseDamage = 15;
+    this.damage = 15;
     this.baseAttackRange = 12;
     this.attackRange = 12;
     this.baseAttackCooldown = 1200;

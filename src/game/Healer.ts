@@ -14,8 +14,8 @@ export class Healer extends Fighter {
     this.maxHealth = 70;
     this.baseSpeed = 0.45;
     this.speed = 0.45;
-    this.baseDamage = 5;
-    this.damage = 5;
+    this.baseDamage = 2;
+    this.damage = 2;
     this.baseAttackRange = 14;
     this.attackRange = 14;
     this.baseAttackCooldown = 2000;
