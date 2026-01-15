@@ -53,6 +53,7 @@ export class Game {
   private player: Player | null = null;
   private backgroundImage: HTMLImageElement | null = null;
   private topBoss: Boss | null = null;
+  private lastBossSpawnTime: number = 0;
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -113,6 +114,7 @@ export class Game {
     this.topTower = null;
     this.bottomTower = null;
     this.topBoss = null;
+    this.lastBossSpawnTime = 0;
     this.player = null;
     this.xpOrbs = [];
     this.topKills = 0;
@@ -248,9 +250,12 @@ export class Game {
     // Update game timer
     this.gameTime += deltaTime;
 
-    // Spawn enemy boss after 3 minutes
-    if (this.gameTime >= 180000 && !this.topBoss) {
+    // Spawn enemy boss every 2 minutes
+    const bossInterval = 120000;
+    const timeSinceLastSpawn = this.gameTime - this.lastBossSpawnTime;
+    if (timeSinceLastSpawn >= bossInterval && (!this.topBoss || this.topBoss.isDead)) {
       this.topBoss = new Boss('top', this.canvas.width / 2, this.canvas.height);
+      this.lastBossSpawnTime = this.gameTime;
       SoundManager.playExplosion();
     }
 
