@@ -1,5 +1,6 @@
 import { Fighter } from './Fighter';
 import { SpriteRenderer } from './SpriteRenderer';
+import { SoundManager } from './SoundManager';
 import type { Team, FighterType } from './types';
 
 export class Swordsman extends Fighter {
@@ -39,9 +40,11 @@ export class Swordsman extends Fighter {
       if (this.modifiers?.swordsmanSweepAbility && this.attackCount % 3 === 0 && allEnemies) {
         this.performSweepAttack(allEnemies);
         this.isSweeping = true;
+        SoundManager.playSweep();
       } else {
         this.dealDamage(target, this.damage, allEnemies);
         this.isSwinging = true;
+        SoundManager.playSwordSwing();
       }
 
       this.lastAttackTime = now;

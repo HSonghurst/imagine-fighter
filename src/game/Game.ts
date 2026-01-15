@@ -9,6 +9,7 @@ import { XPOrb } from './XPOrb';
 import { Tower } from './Tower';
 import { Building, BUILDING_TYPES } from './Building';
 import { ALL_CARDS, TeamModifiers } from './Card';
+import { SoundManager } from './SoundManager';
 import type { Card } from './Card';
 import type { BuildingChoice } from './Building';
 import type { Team, FighterType } from './types';
@@ -217,11 +218,13 @@ export class Game {
     // Check win condition
     if (this.topTower?.isDead) {
       this.running = false;
+      SoundManager.playVictory();
       this.onWinnerCallback('bottom');
       return;
     }
     if (this.bottomTower?.isDead) {
       this.running = false;
+      SoundManager.playVictory();
       this.onWinnerCallback('top');
       return;
     }
@@ -348,6 +351,7 @@ export class Game {
   }
 
   private collectXP(team: Team, amount: number): void {
+    SoundManager.playXPCollect();
     if (team === 'top') {
       this.topXP += amount;
       const required = this.getXPRequired(this.topLevel);
@@ -368,6 +372,8 @@ export class Game {
   }
 
   private onLevelUp(team: Team, level: number): void {
+    // Play level up sound
+    SoundManager.playLevelUp();
     // Card selection every level
     this.triggerSelection(team, 'card');
 

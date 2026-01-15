@@ -1,4 +1,5 @@
 import { Fighter } from './Fighter';
+import { SoundManager } from './SoundManager';
 import type { Team } from './types';
 
 export class Fireball {
@@ -69,6 +70,7 @@ export class Fireball {
 
   private explode(enemies: Fighter[]): void {
     this.isExploding = true;
+    SoundManager.playExplosion();
     const modifiers = this.shooter?.modifiers;
 
     // Damage all enemies in radius

@@ -1,6 +1,7 @@
 import { Fighter } from './Fighter';
 import { Arrow } from './Arrow';
 import { SpriteRenderer } from './SpriteRenderer';
+import { SoundManager } from './SoundManager';
 import type { Team, FighterType } from './types';
 
 export class Archer extends Fighter {
@@ -41,6 +42,7 @@ export class Archer extends Fighter {
         this.arrows.push(new Arrow(this.x, this.y, target, this.damage, this.team, this));
       }
 
+      SoundManager.playArrowShot();
       this.lastAttackTime = now;
     }
   }

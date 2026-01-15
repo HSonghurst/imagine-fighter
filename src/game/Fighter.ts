@@ -1,6 +1,7 @@
 import type { Team, Position, FighterType } from './types';
 import type { TeamModifiers } from './Card';
 import { DamageNumberManager } from './DamageNumber';
+import { SoundManager } from './SoundManager';
 
 export interface StatusEffects {
   burning: number;
@@ -233,6 +234,7 @@ export abstract class Fighter {
         const baseFreezeChance = 0.1;
         if (Math.random() < baseFreezeChance * this.modifiers.freezeChance) {
           target.statusEffects.frozenUntil = Date.now() + 1500;
+          SoundManager.playFreeze();
         }
       }
       // Lifesteal (multiplier - 1 = actual percentage, e.g., 1.2 = 20% lifesteal)
@@ -268,6 +270,13 @@ export abstract class Fighter {
   takeDamage(amount: number, attacker?: Fighter, isCrit: boolean = false): void {
     this.health -= amount;
 
+    // Play hit sound
+    if (isCrit) {
+      SoundManager.playCritical();
+    } else {
+      SoundManager.playHit();
+    }
+
     // Spawn floating damage number (yellow for crit, white otherwise)
     const color = isCrit ? '#fbbf24' : '#ffffff';
     DamageNumberManager.spawn(this.x, this.y - 10, amount, color);
@@ -287,6 +296,7 @@ export abstract class Fighter {
     if (this.health <= 0) {
       this.health = 0;
       this.isDead = true;
+      SoundManager.playDeath();
     }
   }
 

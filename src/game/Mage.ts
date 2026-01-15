@@ -1,6 +1,7 @@
 import { Fighter } from './Fighter';
 import { Fireball } from './Fireball';
 import { SpriteRenderer } from './SpriteRenderer';
+import { SoundManager } from './SoundManager';
 import type { Team, FighterType } from './types';
 
 interface ChainFire {
@@ -50,8 +51,10 @@ export class Mage extends Fighter {
       // Check for conflagration ability (every 10 attacks)
       if (this.modifiers?.mageConflagrationAbility && this.attackCount % 10 === 0 && allEnemies) {
         this.startConflagration(target, allEnemies);
+        SoundManager.playChainFire();
       } else {
         this.fireballs.push(new Fireball(this.x, this.y, target, this.damage, this.team, this));
+        SoundManager.playFireball();
       }
 
       this.lastAttackTime = now;

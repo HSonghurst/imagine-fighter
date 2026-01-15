@@ -1,5 +1,6 @@
 import { Fighter } from './Fighter';
 import { SpriteRenderer } from './SpriteRenderer';
+import { SoundManager } from './SoundManager';
 import type { Team, FighterType } from './types';
 
 export class Knight extends Fighter {
@@ -53,6 +54,7 @@ export class Knight extends Fighter {
       this.lastTauntTime = now;
       this.invulnerableUntil = now + 3000; // 3 seconds invulnerability
       this.isTaunting = true;
+      SoundManager.playTaunt();
     }
 
     // Clear taunting visual after invuln ends
