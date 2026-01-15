@@ -33,65 +33,65 @@ export interface Card {
 }
 
 export const ALL_CARDS: Card[] = [
-  // Damage multipliers
-  { id: 1, name: "Sharp Arrows", description: "+20% Archer damage", effect: { damageMultiplier: { type: 'archer', value: 1.2 } }, color: '#ef4444' },
-  { id: 2, name: "Honed Blades", description: "+20% Swordsman damage", effect: { damageMultiplier: { type: 'swordsman', value: 1.2 } }, color: '#ef4444' },
-  { id: 3, name: "Inferno Staff", description: "+20% Mage damage", effect: { damageMultiplier: { type: 'mage', value: 1.2 } }, color: '#ef4444' },
-  { id: 4, name: "Heavy Strikes", description: "+20% Knight damage", effect: { damageMultiplier: { type: 'knight', value: 1.2 } }, color: '#ef4444' },
-  { id: 5, name: "War Fury", description: "+15% all damage", effect: { damageMultiplier: { type: 'all', value: 1.15 } }, color: '#ef4444' },
+  // Damage multipliers (reduced by 75%)
+  { id: 1, name: "Sharp Arrows", description: "+5% Archer damage", effect: { damageMultiplier: { type: 'archer', value: 1.05 } }, color: '#ef4444' },
+  { id: 2, name: "Honed Blades", description: "+5% Swordsman damage", effect: { damageMultiplier: { type: 'swordsman', value: 1.05 } }, color: '#ef4444' },
+  { id: 3, name: "Inferno Staff", description: "+5% Mage damage", effect: { damageMultiplier: { type: 'mage', value: 1.05 } }, color: '#ef4444' },
+  { id: 4, name: "Heavy Strikes", description: "+5% Knight damage", effect: { damageMultiplier: { type: 'knight', value: 1.05 } }, color: '#ef4444' },
+  { id: 5, name: "War Fury", description: "+4% all damage", effect: { damageMultiplier: { type: 'all', value: 1.04 } }, color: '#ef4444' },
 
   // Health multipliers
-  { id: 6, name: "Thick Armor", description: "+25% Swordsman health", effect: { healthMultiplier: { type: 'swordsman', value: 1.25 } }, color: '#22c55e' },
-  { id: 7, name: "Fortress Shield", description: "+30% Knight health", effect: { healthMultiplier: { type: 'knight', value: 1.3 } }, color: '#22c55e' },
-  { id: 8, name: "Arcane Barrier", description: "+25% Mage health", effect: { healthMultiplier: { type: 'mage', value: 1.25 } }, color: '#22c55e' },
-  { id: 9, name: "Fortitude", description: "+15% all health", effect: { healthMultiplier: { type: 'all', value: 1.15 } }, color: '#22c55e' },
-  { id: 10, name: "Ranger Endurance", description: "+25% Archer health", effect: { healthMultiplier: { type: 'archer', value: 1.25 } }, color: '#22c55e' },
+  { id: 6, name: "Thick Armor", description: "+6% Swordsman health", effect: { healthMultiplier: { type: 'swordsman', value: 1.06 } }, color: '#22c55e' },
+  { id: 7, name: "Fortress Shield", description: "+8% Knight health", effect: { healthMultiplier: { type: 'knight', value: 1.08 } }, color: '#22c55e' },
+  { id: 8, name: "Arcane Barrier", description: "+6% Mage health", effect: { healthMultiplier: { type: 'mage', value: 1.06 } }, color: '#22c55e' },
+  { id: 9, name: "Fortitude", description: "+4% all health", effect: { healthMultiplier: { type: 'all', value: 1.04 } }, color: '#22c55e' },
+  { id: 10, name: "Ranger Endurance", description: "+6% Archer health", effect: { healthMultiplier: { type: 'archer', value: 1.06 } }, color: '#22c55e' },
 
   // Speed multipliers
-  { id: 11, name: "Swift Feet", description: "+25% movement speed", effect: { speedMultiplier: 1.25 }, color: '#3b82f6' },
-  { id: 12, name: "Battle Frenzy", description: "+20% attack speed", effect: { attackSpeedMultiplier: 1.2 }, color: '#3b82f6' },
-  { id: 13, name: "Lightning Reflexes", description: "+15% speed & attack speed", effect: { speedMultiplier: 1.15, attackSpeedMultiplier: 1.15 }, color: '#3b82f6' },
+  { id: 11, name: "Swift Feet", description: "+6% movement speed", effect: { speedMultiplier: 1.06 }, color: '#3b82f6' },
+  { id: 12, name: "Battle Frenzy", description: "+5% attack speed", effect: { attackSpeedMultiplier: 1.05 }, color: '#3b82f6' },
+  { id: 13, name: "Lightning Reflexes", description: "+4% speed & attack speed", effect: { speedMultiplier: 1.04, attackSpeedMultiplier: 1.04 }, color: '#3b82f6' },
 
   // Range multipliers
-  { id: 14, name: "Eagle Eye", description: "+30% Archer range", effect: { rangeMultiplier: { type: 'archer', value: 1.3 } }, color: '#a855f7' },
-  { id: 15, name: "Far Sight", description: "+30% Mage range", effect: { rangeMultiplier: { type: 'mage', value: 1.3 } }, color: '#a855f7' },
-  { id: 16, name: "Extended Reach", description: "+20% all range", effect: { rangeMultiplier: { type: 'all', value: 1.2 } }, color: '#a855f7' },
+  { id: 14, name: "Eagle Eye", description: "+8% Archer range", effect: { rangeMultiplier: { type: 'archer', value: 1.08 } }, color: '#a855f7' },
+  { id: 15, name: "Far Sight", description: "+8% Mage range", effect: { rangeMultiplier: { type: 'mage', value: 1.08 } }, color: '#a855f7' },
+  { id: 16, name: "Extended Reach", description: "+5% all range", effect: { rangeMultiplier: { type: 'all', value: 1.05 } }, color: '#a855f7' },
 
   // Additional combat cards
-  { id: 17, name: "Piercing Shots", description: "+25% Archer damage", effect: { damageMultiplier: { type: 'archer', value: 1.25 } }, color: '#ef4444' },
-  { id: 18, name: "Arcane Power", description: "+25% Mage damage", effect: { damageMultiplier: { type: 'mage', value: 1.25 } }, color: '#a855f7' },
-  { id: 19, name: "Iron Will", description: "+20% all health", effect: { healthMultiplier: { type: 'all', value: 1.2 } }, color: '#22c55e' },
-  { id: 20, name: "Bloodlust", description: "+25% damage, -10% health", effect: { damageMultiplier: { type: 'all', value: 1.25 }, healthMultiplier: { type: 'all', value: 0.9 } }, color: '#dc2626' },
-  { id: 21, name: "Sniper Training", description: "+40% Archer range", effect: { rangeMultiplier: { type: 'archer', value: 1.4 } }, color: '#3b82f6' },
+  { id: 17, name: "Piercing Shots", description: "+6% Archer damage", effect: { damageMultiplier: { type: 'archer', value: 1.06 } }, color: '#ef4444' },
+  { id: 18, name: "Arcane Power", description: "+6% Mage damage", effect: { damageMultiplier: { type: 'mage', value: 1.06 } }, color: '#a855f7' },
+  { id: 19, name: "Iron Will", description: "+5% all health", effect: { healthMultiplier: { type: 'all', value: 1.05 } }, color: '#22c55e' },
+  { id: 20, name: "Bloodlust", description: "+6% damage, -2% health", effect: { damageMultiplier: { type: 'all', value: 1.06 }, healthMultiplier: { type: 'all', value: 0.98 } }, color: '#dc2626' },
+  { id: 21, name: "Sniper Training", description: "+10% Archer range", effect: { rangeMultiplier: { type: 'archer', value: 1.1 } }, color: '#3b82f6' },
 
   // Status effects (percentage-based, compounding)
-  { id: 22, name: "Burning Weapons", description: "+10% burn damage on hit", effect: { burnMultiplier: 1.1 }, color: '#f59e0b' },
-  { id: 23, name: "Frost Touch", description: "+15% freeze chance", effect: { freezeChance: 1.15 }, color: '#06b6d4' },
-  { id: 24, name: "Poison Tips", description: "+10% poison damage on hit", effect: { poisonMultiplier: 1.1 }, color: '#84cc16' },
-  { id: 25, name: "Vampiric Strike", description: "+20% lifesteal", effect: { lifestealPercent: 1.2 }, color: '#dc2626' },
-  { id: 26, name: "Shattering Blow", description: "+15% splash damage", effect: { splashMultiplier: 1.15 }, color: '#ec4899' },
+  { id: 22, name: "Burning Weapons", description: "+2% burn damage on hit", effect: { burnMultiplier: 1.025 }, color: '#f59e0b' },
+  { id: 23, name: "Frost Touch", description: "+4% freeze chance", effect: { freezeChance: 1.04 }, color: '#06b6d4' },
+  { id: 24, name: "Poison Tips", description: "+2% poison damage on hit", effect: { poisonMultiplier: 1.025 }, color: '#84cc16' },
+  { id: 25, name: "Vampiric Strike", description: "+5% lifesteal", effect: { lifestealPercent: 1.05 }, color: '#dc2626' },
+  { id: 26, name: "Shattering Blow", description: "+4% splash damage", effect: { splashMultiplier: 1.04 }, color: '#ec4899' },
 
   // Special effects
-  { id: 27, name: "Critical Mastery", description: "+15% crit chance", effect: { critChance: 1.15 }, color: '#fbbf24' },
-  { id: 28, name: "Thorns Aura", description: "+15% thorns damage", effect: { thornsMultiplier: 1.15 }, color: '#10b981' },
-  { id: 29, name: "Regeneration", description: "+20% regen rate", effect: { regenMultiplier: 1.2 }, color: '#14b8a6' },
+  { id: 27, name: "Critical Mastery", description: "+4% crit chance", effect: { critChance: 1.04 }, color: '#fbbf24' },
+  { id: 28, name: "Thorns Aura", description: "+4% thorns damage", effect: { thornsMultiplier: 1.04 }, color: '#10b981' },
+  { id: 29, name: "Regeneration", description: "+5% regen rate", effect: { regenMultiplier: 1.05 }, color: '#14b8a6' },
 
   // More cards
-  { id: 30, name: "Glass Cannon", description: "+40% damage, -20% health", effect: { damageMultiplier: { type: 'all', value: 1.4 }, healthMultiplier: { type: 'all', value: 0.8 } }, color: '#f43f5e' },
-  { id: 31, name: "Berserker Rage", description: "+30% attack speed", effect: { attackSpeedMultiplier: 1.3 }, color: '#ef4444' },
-  { id: 32, name: "Fortified Armor", description: "+30% Knight health", effect: { healthMultiplier: { type: 'knight', value: 1.3 } }, color: '#6b7280' },
-  { id: 33, name: "Deadly Precision", description: "+25% crit chance", effect: { critChance: 1.25 }, color: '#fbbf24' },
-  { id: 34, name: "Infernal Touch", description: "+20% burn damage", effect: { burnMultiplier: 1.2 }, color: '#f97316' },
-  { id: 35, name: "Arctic Chill", description: "+25% freeze chance", effect: { freezeChance: 1.25 }, color: '#06b6d4' },
-  { id: 36, name: "Toxic Coating", description: "+20% poison damage", effect: { poisonMultiplier: 1.2 }, color: '#84cc16' },
-  { id: 37, name: "Soul Drain", description: "+30% lifesteal", effect: { lifestealPercent: 1.3 }, color: '#7c3aed' },
-  { id: 38, name: "Explosive Force", description: "+25% splash damage", effect: { splashMultiplier: 1.25 }, color: '#ec4899' },
-  { id: 39, name: "Sword Mastery", description: "+30% Swordsman damage", effect: { damageMultiplier: { type: 'swordsman', value: 1.3 } }, color: '#3b82f6' },
-  { id: 40, name: "Knight's Valor", description: "+25% Knight damage", effect: { damageMultiplier: { type: 'knight', value: 1.25 } }, color: '#f59e0b' },
-  { id: 41, name: "Marathon Runner", description: "+35% movement speed", effect: { speedMultiplier: 1.35 }, color: '#14b8a6' },
-  { id: 42, name: "Mage Supremacy", description: "+35% Mage damage, +20% range", effect: { damageMultiplier: { type: 'mage', value: 1.35 }, rangeMultiplier: { type: 'mage', value: 1.2 } }, color: '#a855f7' },
+  { id: 30, name: "Glass Cannon", description: "+10% damage, -5% health", effect: { damageMultiplier: { type: 'all', value: 1.1 }, healthMultiplier: { type: 'all', value: 0.95 } }, color: '#f43f5e' },
+  { id: 31, name: "Berserker Rage", description: "+8% attack speed", effect: { attackSpeedMultiplier: 1.08 }, color: '#ef4444' },
+  { id: 32, name: "Fortified Armor", description: "+8% Knight health", effect: { healthMultiplier: { type: 'knight', value: 1.08 } }, color: '#6b7280' },
+  { id: 33, name: "Deadly Precision", description: "+6% crit chance", effect: { critChance: 1.06 }, color: '#fbbf24' },
+  { id: 34, name: "Infernal Touch", description: "+5% burn damage", effect: { burnMultiplier: 1.05 }, color: '#f97316' },
+  { id: 35, name: "Arctic Chill", description: "+6% freeze chance", effect: { freezeChance: 1.06 }, color: '#06b6d4' },
+  { id: 36, name: "Toxic Coating", description: "+5% poison damage", effect: { poisonMultiplier: 1.05 }, color: '#84cc16' },
+  { id: 37, name: "Soul Drain", description: "+8% lifesteal", effect: { lifestealPercent: 1.08 }, color: '#7c3aed' },
+  { id: 38, name: "Explosive Force", description: "+6% splash damage", effect: { splashMultiplier: 1.06 }, color: '#ec4899' },
+  { id: 39, name: "Sword Mastery", description: "+8% Swordsman damage", effect: { damageMultiplier: { type: 'swordsman', value: 1.08 } }, color: '#3b82f6' },
+  { id: 40, name: "Knight's Valor", description: "+6% Knight damage", effect: { damageMultiplier: { type: 'knight', value: 1.06 } }, color: '#f59e0b' },
+  { id: 41, name: "Marathon Runner", description: "+9% movement speed", effect: { speedMultiplier: 1.09 }, color: '#14b8a6' },
+  { id: 42, name: "Mage Supremacy", description: "+9% Mage damage, +5% range", effect: { damageMultiplier: { type: 'mage', value: 1.09 }, rangeMultiplier: { type: 'mage', value: 1.05 } }, color: '#a855f7' },
 
-  // Ability cards
+  // Ability cards (unchanged - these are boolean toggles)
   { id: 43, name: "Arrow Storm", description: "Archers fire fan of 5 arrows every 5 attacks", effect: { archerFanAbility: true }, color: '#22c55e' },
   { id: 44, name: "Whirlwind Slash", description: "Swordsmen sweep all nearby enemies every 3 attacks", effect: { swordsmanSweepAbility: true }, color: '#3b82f6' },
   { id: 45, name: "Guardian's Call", description: "Knights taunt enemies and become invulnerable (6s cooldown)", effect: { knightTauntAbility: true }, color: '#f59e0b' },
