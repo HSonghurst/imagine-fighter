@@ -102,7 +102,7 @@ export class Fireball {
           if (modifiers.poisonMultiplier > 1) {
             enemy.statusEffects.poison += 2 * modifiers.poisonMultiplier;
           }
-          if (Math.random() < 0.1 * modifiers.freezeChance) {
+          if (modifiers.freezeChance > 1 && Math.random() < 0.1 * modifiers.freezeChance) {
             enemy.statusEffects.frozenUntil = Date.now() + 1500;
           }
           if (modifiers.lifestealPercent > 1 && this.shooter) {

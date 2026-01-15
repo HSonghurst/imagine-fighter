@@ -228,10 +228,12 @@ export abstract class Fighter {
       if (this.modifiers.poisonMultiplier > 1) {
         target.statusEffects.poison += 2 * this.modifiers.poisonMultiplier;
       }
-      // Freeze (base 10% * multiplier)
-      const baseFreezeChance = 0.1;
-      if (Math.random() < baseFreezeChance * this.modifiers.freezeChance) {
-        target.statusEffects.frozenUntil = Date.now() + 1500;
+      // Freeze (base 10% * multiplier) - only if we have freeze card
+      if (this.modifiers.freezeChance > 1) {
+        const baseFreezeChance = 0.1;
+        if (Math.random() < baseFreezeChance * this.modifiers.freezeChance) {
+          target.statusEffects.frozenUntil = Date.now() + 1500;
+        }
       }
       // Lifesteal (multiplier - 1 = actual percentage, e.g., 1.2 = 20% lifesteal)
       if (this.modifiers.lifestealPercent > 1) {
