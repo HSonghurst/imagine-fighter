@@ -1,0 +1,243 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #1a1a2e;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+}
+
+.controls {
+  display: flex;
+  gap: 40px;
+  align-items: center;
+}
+
+.team-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: center;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  min-width: 120px;
+}
+
+.team-info h3 {
+  color: #fff;
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.team-info:first-child h3 {
+  color: #4a90d9;
+}
+
+.team-info:last-child h3 {
+  color: #d94a4a;
+}
+
+.team-info span {
+  color: #aaa;
+  font-size: 14px;
+}
+
+.team-info .kills {
+  color: #ffd700;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.game-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.game-controls button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  transition: transform 0.1s;
+}
+
+.game-controls button:hover {
+  transform: scale(1.05);
+}
+
+#start-battle {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+}
+
+#reset {
+  background: linear-gradient(135deg, #ff9800, #f57c00);
+  color: white;
+}
+
+.game-area {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+}
+
+#game-canvas {
+  border: 3px solid #333;
+  border-radius: 10px;
+  background: #2d2d44;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.stat-panel {
+  width: 180px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  border: 2px solid #333;
+}
+
+.stat-panel h4 {
+  color: #fff;
+  font-size: 14px;
+  margin-bottom: 10px;
+  text-align: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #444;
+}
+
+.top-panel {
+  border-color: #4a90d9;
+}
+
+.top-panel h4 {
+  color: #4a90d9;
+}
+
+.bottom-panel {
+  border-color: #d94a4a;
+}
+
+.bottom-panel h4 {
+  color: #d94a4a;
+}
+
+.stat-list {
+  font-size: 11px;
+  color: #aaa;
+  line-height: 1.6;
+}
+
+.stat-item {
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.stat-item:last-child {
+  border-bottom: none;
+}
+
+.stat-item .stat-name {
+  color: #888;
+}
+
+.stat-item .stat-value {
+  color: #4ade80;
+  font-weight: bold;
+}
+
+#winner-display {
+  font-size: 32px;
+  font-weight: bold;
+  color: #ffd700;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  min-height: 40px;
+}
+
+/* Card Modal */
+.card-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.card-modal.hidden {
+  display: none;
+}
+
+.card-modal-content {
+  background: #1a1a2e;
+  padding: 30px;
+  border-radius: 15px;
+  text-align: center;
+  border: 2px solid #333;
+}
+
+.card-modal-content h2 {
+  color: #fff;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.card-choices {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.card {
+  width: 180px;
+  padding: 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 3px solid transparent;
+  background: #2d2d44;
+}
+
+.card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.card-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.card-description {
+  font-size: 13px;
+  color: #aaa;
+  line-height: 1.4;
+}
+
+.card-icon {
+  font-size: 32px;
+  margin-bottom: 10px;
+}

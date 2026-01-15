@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Imagine Fighter</title>
+  </head>
+  <body>
+    <div id="app">
+      <div class="controls">
+        <div class="team-info">
+          <h3>Blue Team</h3>
+          <span id="top-count">0</span>
+          <span id="top-kills" class="kills">Kills: 0</span>
+        </div>
+        <div class="game-controls">
+          <button id="start-battle">Start Battle</button>
+          <button id="reset">Reset</button>
+        </div>
+        <div class="team-info">
+          <h3>Red Team</h3>
+          <span id="bottom-count">0</span>
+          <span id="bottom-kills" class="kills">Kills: 0</span>
+        </div>
+      </div>
+      <div class="game-area">
+        <div id="top-stats" class="stat-panel top-panel">
+          <h4>Blue Team Modifiers</h4>
+          <div class="stat-list" id="top-stat-list">No modifiers yet</div>
+        </div>
+        <canvas id="game-canvas"></canvas>
+        <div id="bottom-stats" class="stat-panel bottom-panel">
+          <h4>Red Team Modifiers</h4>
+          <div class="stat-list" id="bottom-stat-list">No modifiers yet</div>
+        </div>
+      </div>
+      <div id="winner-display"></div>
+      <div id="card-modal" class="card-modal hidden">
+        <div class="card-modal-content">
+          <h2 id="card-modal-title">Blue Team - Choose a Card</h2>
+          <div id="card-choices" class="card-choices"></div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
