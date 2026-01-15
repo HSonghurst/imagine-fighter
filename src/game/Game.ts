@@ -385,15 +385,15 @@ export class Game {
       const buildings = team === 'top' ? this.topBuildings : this.bottomBuildings;
       const slotIndex = (level - 11) % 10; // Cycle through 10 slots
       const building = buildings[slotIndex];
-      if (building && building.cap < 5) {
-        building.cap++;
+      if (building && building.cap < 10) {
+        building.cap += 2;
       } else {
         // Find next building that can be upgraded
         for (let i = 0; i < 10; i++) {
           const idx = (slotIndex + i) % 10;
           const b = buildings[idx];
-          if (b && b.cap < 5) {
-            b.cap++;
+          if (b && b.cap < 10) {
+            b.cap += 2;
             break;
           }
         }

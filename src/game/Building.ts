@@ -8,7 +8,7 @@ export class Building {
   y: number;
   width: number = 40;
   height: number = 35;
-  cap: number = 1; // How many units this building can produce (max 5)
+  cap: number = 2; // How many units this building can produce (max 10)
 
   constructor(team: Team, slot: number, type: FighterType, canvasWidth: number, canvasHeight: number) {
     this.team = team;
