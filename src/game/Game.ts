@@ -254,14 +254,8 @@ export class Game {
       SoundManager.playExplosion();
     }
 
-    // Check win condition - player destroys enemy tower (before boss spawns) or kills boss
-    if (this.topTower?.isDead && !this.topBoss) {
-      this.running = false;
-      SoundManager.playVictory();
-      this.onWinnerCallback('bottom');
-      return;
-    }
-    if (this.topBoss?.isDead) {
+    // Check win condition - player destroys enemy tower
+    if (this.topTower?.isDead) {
       this.running = false;
       SoundManager.playVictory();
       this.onWinnerCallback('bottom');
