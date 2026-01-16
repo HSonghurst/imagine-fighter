@@ -853,4 +853,135 @@ export class SpriteRenderer {
     this.pixel(ctx, baseX + 12*p, baseY + 5*p + bobOffset - armSwing, p, clubDark);
     this.pixel(ctx, baseX + 12*p, baseY + 6*p + bobOffset - armSwing, p, club);
   }
+
+  static drawWraith(ctx: CanvasRenderingContext2D, x: number, y: number, _team: Team, frame: number): void {
+    const p = 2; // Pixel size
+    const baseX = x - 8 * p;
+    const baseY = y - 12 * p;
+
+    // Floating bob effect (more pronounced for ghostly feel)
+    const floatOffset = Math.sin(frame * Math.PI / 2) * 3;
+
+    // Wraith colors - dark purple/black ethereal
+    const robe = '#1a0a2e';
+    const robeDark = '#0d0518';
+    const robeLight = '#2d1b4e';
+    const glow = '#9333ea';
+    const glowBright = '#a855f7';
+    const eyes = '#ff0000';
+    const scytheHandle = '#3d2817';
+    const scytheBlade = '#c0c0c0';
+    const scytheBladeEdge = '#e8e8e8';
+
+    // Ethereal glow effect behind wraith
+    ctx.fillStyle = `rgba(147, 51, 234, ${0.2 + Math.sin(frame * Math.PI / 2) * 0.1})`;
+    ctx.beginPath();
+    ctx.arc(x, y - 5 + floatOffset, 18, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Hood top
+    this.pixel(ctx, baseX + 5*p, baseY + 0*p + floatOffset, p, robeDark);
+    this.pixel(ctx, baseX + 6*p, baseY + 0*p + floatOffset, p, robe);
+    this.pixel(ctx, baseX + 7*p, baseY + 0*p + floatOffset, p, robe);
+    this.pixel(ctx, baseX + 8*p, baseY + 0*p + floatOffset, p, robe);
+    this.pixel(ctx, baseX + 9*p, baseY + 0*p + floatOffset, p, robeDark);
+
+    // Hood row 2
+    this.pixel(ctx, baseX + 4*p, baseY + 1*p + floatOffset, p, robeDark);
+    this.pixel(ctx, baseX + 5*p, baseY + 1*p + floatOffset, p, robe);
+    this.pixel(ctx, baseX + 6*p, baseY + 1*p + floatOffset, p, robeLight);
+    this.pixel(ctx, baseX + 7*p, baseY + 1*p + floatOffset, p, robe);
+    this.pixel(ctx, baseX + 8*p, baseY + 1*p + floatOffset, p, robeLight);
+    this.pixel(ctx, baseX + 9*p, baseY + 1*p + floatOffset, p, robe);
+    this.pixel(ctx, baseX + 10*p, baseY + 1*p + floatOffset, p, robeDark);
+
+    // Face shadow with glowing eyes
+    this.pixel(ctx, baseX + 4*p, baseY + 2*p + floatOffset, p, robe);
+    this.pixel(ctx, baseX + 5*p, baseY + 2*p + floatOffset, p, robeDark);
+    this.pixel(ctx, baseX + 6*p, baseY + 2*p + floatOffset, p, eyes);
+    this.pixel(ctx, baseX + 7*p, baseY + 2*p + floatOffset, p, robeDark);
+    this.pixel(ctx, baseX + 8*p, baseY + 2*p + floatOffset, p, eyes);
+    this.pixel(ctx, baseX + 9*p, baseY + 2*p + floatOffset, p, robeDark);
+    this.pixel(ctx, baseX + 10*p, baseY + 2*p + floatOffset, p, robe);
+
+    // Lower hood
+    this.pixel(ctx, baseX + 4*p, baseY + 3*p + floatOffset, p, robeDark);
+    this.pixel(ctx, baseX + 5*p, baseY + 3*p + floatOffset, p, robe);
+    this.pixel(ctx, baseX + 6*p, baseY + 3*p + floatOffset, p, robeDark);
+    this.pixel(ctx, baseX + 7*p, baseY + 3*p + floatOffset, p, robeDark);
+    this.pixel(ctx, baseX + 8*p, baseY + 3*p + floatOffset, p, robeDark);
+    this.pixel(ctx, baseX + 9*p, baseY + 3*p + floatOffset, p, robe);
+    this.pixel(ctx, baseX + 10*p, baseY + 3*p + floatOffset, p, robeDark);
+
+    // Shoulders
+    this.pixel(ctx, baseX + 3*p, baseY + 4*p + floatOffset, p, robeDark);
+    this.pixel(ctx, baseX + 4*p, baseY + 4*p + floatOffset, p, robe);
+    this.pixel(ctx, baseX + 5*p, baseY + 4*p + floatOffset, p, robeLight);
+    this.pixel(ctx, baseX + 6*p, baseY + 4*p + floatOffset, p, robe);
+    this.pixel(ctx, baseX + 7*p, baseY + 4*p + floatOffset, p, glow);
+    this.pixel(ctx, baseX + 8*p, baseY + 4*p + floatOffset, p, robe);
+    this.pixel(ctx, baseX + 9*p, baseY + 4*p + floatOffset, p, robeLight);
+    this.pixel(ctx, baseX + 10*p, baseY + 4*p + floatOffset, p, robe);
+    this.pixel(ctx, baseX + 11*p, baseY + 4*p + floatOffset, p, robeDark);
+
+    // Body
+    for (let row = 5; row <= 8; row++) {
+      this.pixel(ctx, baseX + 3*p, baseY + row*p + floatOffset, p, robeDark);
+      this.pixel(ctx, baseX + 4*p, baseY + row*p + floatOffset, p, robe);
+      this.pixel(ctx, baseX + 5*p, baseY + row*p + floatOffset, p, robeLight);
+      this.pixel(ctx, baseX + 6*p, baseY + row*p + floatOffset, p, robe);
+      this.pixel(ctx, baseX + 7*p, baseY + row*p + floatOffset, p, row === 6 ? glowBright : glow);
+      this.pixel(ctx, baseX + 8*p, baseY + row*p + floatOffset, p, robe);
+      this.pixel(ctx, baseX + 9*p, baseY + row*p + floatOffset, p, robeLight);
+      this.pixel(ctx, baseX + 10*p, baseY + row*p + floatOffset, p, robe);
+      this.pixel(ctx, baseX + 11*p, baseY + row*p + floatOffset, p, robeDark);
+    }
+
+    // Lower robe (tattered, fading)
+    const fadeAlpha = 0.8;
+    ctx.globalAlpha = fadeAlpha;
+    this.pixel(ctx, baseX + 4*p, baseY + 9*p + floatOffset, p, robe);
+    this.pixel(ctx, baseX + 5*p, baseY + 9*p + floatOffset, p, robeDark);
+    this.pixel(ctx, baseX + 6*p, baseY + 9*p + floatOffset, p, robe);
+    this.pixel(ctx, baseX + 7*p, baseY + 9*p + floatOffset, p, robeDark);
+    this.pixel(ctx, baseX + 8*p, baseY + 9*p + floatOffset, p, robe);
+    this.pixel(ctx, baseX + 9*p, baseY + 9*p + floatOffset, p, robeDark);
+    this.pixel(ctx, baseX + 10*p, baseY + 9*p + floatOffset, p, robe);
+
+    ctx.globalAlpha = fadeAlpha * 0.7;
+    this.pixel(ctx, baseX + 4*p, baseY + 10*p + floatOffset, p, robeDark);
+    this.pixel(ctx, baseX + 6*p, baseY + 10*p + floatOffset, p, robeDark);
+    this.pixel(ctx, baseX + 8*p, baseY + 10*p + floatOffset, p, robeDark);
+    this.pixel(ctx, baseX + 10*p, baseY + 10*p + floatOffset, p, robeDark);
+
+    ctx.globalAlpha = fadeAlpha * 0.4;
+    this.pixel(ctx, baseX + 5*p, baseY + 11*p + floatOffset, p, robeDark);
+    this.pixel(ctx, baseX + 7*p, baseY + 11*p + floatOffset, p, robeDark);
+    this.pixel(ctx, baseX + 9*p, baseY + 11*p + floatOffset, p, robeDark);
+
+    ctx.globalAlpha = 1;
+
+    // Scythe (big, held on right side)
+    const scytheSwing = frame % 2 === 0 ? 0 : p;
+
+    // Handle (long pole)
+    for (let i = 0; i < 10; i++) {
+      this.pixel(ctx, baseX + 12*p, baseY + (2 + i)*p + floatOffset - scytheSwing, p, scytheHandle);
+    }
+
+    // Blade (curved)
+    this.pixel(ctx, baseX + 11*p, baseY + 1*p + floatOffset - scytheSwing, p, scytheBlade);
+    this.pixel(ctx, baseX + 12*p, baseY + 1*p + floatOffset - scytheSwing, p, scytheBladeEdge);
+    this.pixel(ctx, baseX + 10*p, baseY + 2*p + floatOffset - scytheSwing, p, scytheBlade);
+    this.pixel(ctx, baseX + 11*p, baseY + 2*p + floatOffset - scytheSwing, p, scytheBladeEdge);
+    this.pixel(ctx, baseX + 9*p, baseY + 3*p + floatOffset - scytheSwing, p, scytheBlade);
+    this.pixel(ctx, baseX + 10*p, baseY + 3*p + floatOffset - scytheSwing, p, scytheBladeEdge);
+    this.pixel(ctx, baseX + 8*p, baseY + 4*p + floatOffset - scytheSwing, p, scytheBlade);
+    this.pixel(ctx, baseX + 9*p, baseY + 4*p + floatOffset - scytheSwing, p, scytheBladeEdge);
+
+    // Left arm (skeletal, holding scythe)
+    this.pixel(ctx, baseX + 2*p, baseY + 5*p + floatOffset + scytheSwing, p, '#e8e8e8');
+    this.pixel(ctx, baseX + 2*p, baseY + 6*p + floatOffset + scytheSwing, p, '#d0d0d0');
+    this.pixel(ctx, baseX + 2*p, baseY + 7*p + floatOffset + scytheSwing, p, '#e8e8e8');
+  }
 }

@@ -8,6 +8,7 @@ import { Healer } from './Healer';
 import { XPOrb } from './XPOrb';
 import { Tower } from './Tower';
 import { Boss } from './Boss';
+import { Wraith } from './Wraith';
 import { Building, BUILDING_TYPES } from './Building';
 import { ALL_CARDS, TeamModifiers, pickRandomRarity } from './Card';
 import { SoundManager } from './SoundManager';
@@ -54,6 +55,8 @@ export class Game {
   private backgroundImage: HTMLImageElement | null = null;
   private topBoss: Boss | null = null;
   private lastBossSpawnTime: number = 0;
+  private topWraith: Wraith | null = null;
+  private lastWraithSpawnTime: number = 0;
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -115,6 +118,8 @@ export class Game {
     this.bottomTower = null;
     this.topBoss = null;
     this.lastBossSpawnTime = 0;
+    this.topWraith = null;
+    this.lastWraithSpawnTime = 0;
     this.player = null;
     this.xpOrbs = [];
     this.topKills = 0;
@@ -250,18 +255,31 @@ export class Game {
     // Update game timer
     this.gameTime += deltaTime;
 
-    // Spawn enemy boss starting at 2 minutes, then every 30 seconds
+    // Spawn enemy boss (ogre) starting at 2 minutes, then every 30 seconds
     const firstSpawnTime = 120000;
     const respawnInterval = 30000;
-    const timeSinceLastSpawn = this.gameTime - this.lastBossSpawnTime;
-    const shouldSpawn = this.lastBossSpawnTime === 0
+    const timeSinceLastBossSpawn = this.gameTime - this.lastBossSpawnTime;
+    const shouldSpawnBoss = this.lastBossSpawnTime === 0
       ? this.gameTime >= firstSpawnTime
-      : timeSinceLastSpawn >= respawnInterval && (!this.topBoss || this.topBoss.isDead);
+      : timeSinceLastBossSpawn >= respawnInterval && (!this.topBoss || this.topBoss.isDead);
 
-    if (shouldSpawn) {
+    if (shouldSpawnBoss) {
       this.topBoss = new Boss('top', this.canvas.width / 2, this.canvas.height);
       this.lastBossSpawnTime = this.gameTime;
       SoundManager.playExplosion();
+    }
+
+    // Spawn enemy wraith starting at 2:15, then every 30 seconds
+    const wraithFirstSpawn = 135000; // 15 seconds after ogre
+    const timeSinceLastWraithSpawn = this.gameTime - this.lastWraithSpawnTime;
+    const shouldSpawnWraith = this.lastWraithSpawnTime === 0
+      ? this.gameTime >= wraithFirstSpawn
+      : timeSinceLastWraithSpawn >= respawnInterval && (!this.topWraith || this.topWraith.isDead);
+
+    if (shouldSpawnWraith) {
+      this.topWraith = new Wraith('top', this.canvas.width / 2, this.canvas.height);
+      this.lastWraithSpawnTime = this.gameTime;
+      SoundManager.playFireball();
     }
 
     // Check win condition - player destroys enemy tower
@@ -301,8 +319,9 @@ export class Game {
     const bottomTargets: (Fighter | Tower)[] = [...aliveBottom];
     if (this.topTower && !this.topTower.isDead) topTargets.push(this.topTower as unknown as Fighter);
     if (this.bottomTower && !this.bottomTower.isDead) bottomTargets.push(this.bottomTower as unknown as Fighter);
-    // Add enemy boss to targets (only top/enemy team has a boss)
+    // Add enemy bosses to targets (only top/enemy team has bosses)
     if (this.topBoss && !this.topBoss.isDead) topTargets.push(this.topBoss as Fighter);
+    if (this.topWraith && !this.topWraith.isDead) topTargets.push(this.topWraith as Fighter);
     // Add player to targets (player is on bottom team, so top team can target them)
     if (this.player && !this.player.isDead) {
       bottomTargets.push(this.player as unknown as Fighter);
@@ -323,9 +342,12 @@ export class Game {
       this.bottomTower.update(aliveTop);
     }
 
-    // Update enemy boss
+    // Update enemy bosses
     if (this.topBoss && !this.topBoss.isDead) {
       this.topBoss.update(bottomTargets as Fighter[], deltaTime, aliveTop);
+    }
+    if (this.topWraith && !this.topWraith.isDead) {
+      this.topWraith.update(bottomTargets as Fighter[], deltaTime, aliveTop);
     }
 
     // Update player (pass top team as enemies since player is on bottom team)
@@ -664,8 +686,9 @@ export class Game {
     if (this.topTower) this.topTower.draw(ctx);
     if (this.bottomTower) this.bottomTower.draw(ctx);
 
-    // Draw enemy boss
+    // Draw enemy bosses
     if (this.topBoss) this.topBoss.draw(ctx);
+    if (this.topWraith) this.topWraith.draw(ctx);
 
     // Draw fighters
     for (const fighter of this.topTeam) {
