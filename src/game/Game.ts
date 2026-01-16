@@ -250,10 +250,15 @@ export class Game {
     // Update game timer
     this.gameTime += deltaTime;
 
-    // Spawn enemy boss every 2 minutes
-    const bossInterval = 120000;
+    // Spawn enemy boss starting at 2 minutes, then every 30 seconds
+    const firstSpawnTime = 120000;
+    const respawnInterval = 30000;
     const timeSinceLastSpawn = this.gameTime - this.lastBossSpawnTime;
-    if (timeSinceLastSpawn >= bossInterval && (!this.topBoss || this.topBoss.isDead)) {
+    const shouldSpawn = this.lastBossSpawnTime === 0
+      ? this.gameTime >= firstSpawnTime
+      : timeSinceLastSpawn >= respawnInterval && (!this.topBoss || this.topBoss.isDead);
+
+    if (shouldSpawn) {
       this.topBoss = new Boss('top', this.canvas.width / 2, this.canvas.height);
       this.lastBossSpawnTime = this.gameTime;
       SoundManager.playExplosion();
