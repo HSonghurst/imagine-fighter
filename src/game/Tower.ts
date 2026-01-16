@@ -13,6 +13,7 @@ export class Tower {
   width: number = 36;
   height: number = 39;
   isDead: boolean = false;
+  isStructure: boolean = true; // Prevents knockback
   // Attack properties - much more powerful
   attackRange: number = 150; // Long range
   attackCooldown: number = 400; // Fast attack
@@ -24,7 +25,9 @@ export class Tower {
     burning: 0,
     poison: 0,
     frozen: 0,
-    frozenUntil: 0
+    frozenUntil: 0,
+    void: 0,
+    death: 0
   };
 
   constructor(team: Team, canvasWidth: number, canvasHeight: number) {

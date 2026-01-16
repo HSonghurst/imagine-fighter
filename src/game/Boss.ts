@@ -134,11 +134,13 @@ export class Boss extends Fighter {
 
       if (dist <= slamRadius) {
         enemy.takeDamage(slamDamage, this);
-        // Knock back
-        const knockback = 20;
-        const angle = Math.atan2(dy, dx);
-        enemy.x += Math.cos(angle) * knockback;
-        enemy.y += Math.sin(angle) * knockback;
+        // Knock back (skip structures like towers)
+        if (!(enemy as any).isStructure) {
+          const knockback = 20;
+          const angle = Math.atan2(dy, dx);
+          enemy.x += Math.cos(angle) * knockback;
+          enemy.y += Math.sin(angle) * knockback;
+        }
       }
     }
   }
