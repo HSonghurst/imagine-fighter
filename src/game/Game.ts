@@ -252,8 +252,10 @@ export class Game {
   };
 
   private update(deltaTime: number): void {
-    // Update game timer
-    this.gameTime += deltaTime;
+    // Pause game timer when selecting cards/buildings
+    if (!this.isSelectingCard()) {
+      this.gameTime += deltaTime;
+    }
 
     // Spawn enemy boss (ogre) starting at 2 minutes, then every 30 seconds
     const firstSpawnTime = 120000;
