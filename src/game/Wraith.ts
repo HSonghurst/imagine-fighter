@@ -5,24 +5,13 @@ import { SoundManager } from './SoundManager';
 import { DamageNumberManager } from './DamageNumber';
 import type { Team, FighterType } from './types';
 
-interface GhostChain {
-  x: number;
-  y: number;
-  targetX: number;
-  targetY: number;
-  currentTarget: Fighter | null;
-  hitEnemies: Set<Fighter>;
-  progress: number;
-  damage: number;
-}
-
 export class Wraith extends Fighter {
   private attackAnimation: number = 0;
   private reapCooldown: number = 0;
   private readonly REAP_INTERVAL: number = 4000; // Soul reap every 4 seconds
-  private attackCount: number = 0;
+  private ghostBurstCooldown: number = 0;
+  private readonly GHOST_BURST_INTERVAL: number = 15000; // Ghost burst every 15 seconds
   ghosts: Ghost[] = [];
-  private ghostChains: GhostChain[] = [];
 
   constructor(team: Team, x: number, canvasHeight: number) {
     super(team, x, canvasHeight);
@@ -60,9 +49,6 @@ export class Wraith extends Fighter {
     }
     this.ghosts = this.ghosts.filter(g => !g.isDead);
 
-    // Update ghost chains
-    this.updateGhostChains(enemies);
-
     // Process status effects
     this.processStatusEffectsPublic(deltaTime);
 
@@ -88,6 +74,13 @@ export class Wraith extends Fighter {
       this.reapCooldown = this.REAP_INTERVAL;
     }
 
+    // Ghost burst cooldown
+    this.ghostBurstCooldown -= deltaTime;
+    if (this.ghostBurstCooldown <= 0) {
+      this.ghostBurst();
+      this.ghostBurstCooldown = this.GHOST_BURST_INTERVAL;
+    }
+
     this.findTarget(enemies);
 
     if (this.target && !this.target.isDead) {
@@ -107,68 +100,18 @@ export class Wraith extends Fighter {
     }
   }
 
-  private updateGhostChains(allEnemies: Fighter[]): void {
-    for (const chain of this.ghostChains) {
-      chain.progress += 0.12; // Speed of ghost chain
+  private ghostBurst(): void {
+    // Spawn 15 ghosts in a 360 degree circle
+    const numGhosts = 15;
+    const angleStep = (Math.PI * 2) / numGhosts;
 
-      if (chain.progress >= 1 && chain.currentTarget) {
-        // Hit the current target
-        if (!chain.hitEnemies.has(chain.currentTarget) && !chain.currentTarget.isDead) {
-          chain.hitEnemies.add(chain.currentTarget);
-          chain.currentTarget.takeDamage(chain.damage, this);
-          // Apply death DoT
-          chain.currentTarget.statusEffects.death += 5;
+    SoundManager.playFreeze();
+    this.attackAnimation = 20;
 
-          // Find next target to chain to
-          let nextTarget: Fighter | null = null;
-          let closestDist = 70; // Chain range
-
-          for (const enemy of allEnemies) {
-            if (enemy.isDead || chain.hitEnemies.has(enemy)) continue;
-            const dx = enemy.x - chain.currentTarget.x;
-            const dy = enemy.y - chain.currentTarget.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-
-            if (dist < closestDist) {
-              closestDist = dist;
-              nextTarget = enemy;
-            }
-          }
-
-          if (nextTarget) {
-            chain.x = chain.currentTarget.x;
-            chain.y = chain.currentTarget.y;
-            chain.targetX = nextTarget.x;
-            chain.targetY = nextTarget.y;
-            chain.currentTarget = nextTarget;
-            chain.progress = 0;
-            chain.damage *= 0.85; // Reduce damage per chain
-          } else {
-            chain.currentTarget = null; // End the chain
-          }
-        } else {
-          // Target is dead or already hit - end the chain
-          chain.currentTarget = null;
-        }
-      }
+    for (let i = 0; i < numGhosts; i++) {
+      const angle = angleStep * i;
+      this.ghosts.push(new Ghost(this.x, this.y, angle, this.damage, this.team, this));
     }
-
-    // Remove finished ghost chains
-    this.ghostChains = this.ghostChains.filter(c => c.currentTarget !== null);
-  }
-
-  private startGhostChain(startTarget: Fighter, _allEnemies: Fighter[]): void {
-    // Start a ghost chain from the wraith to the target
-    this.ghostChains.push({
-      x: this.x,
-      y: this.y,
-      targetX: startTarget.x,
-      targetY: startTarget.y,
-      currentTarget: startTarget,
-      hitEnemies: new Set(),
-      progress: 0,
-      damage: this.damage * 1.2, // Ghost chain does 120% damage
-    });
   }
 
   private processStatusEffectsPublic(_deltaTime: number): void {
@@ -243,20 +186,22 @@ export class Wraith extends Fighter {
     }
   }
 
-  protected attack(target: Fighter, allEnemies?: Fighter[]): void {
+  protected attack(target: Fighter, _allEnemies?: Fighter[]): void {
     const now = Date.now();
     if (now - this.lastAttackTime >= this.attackCooldown) {
       this.attackAnimation = 12;
-      this.attackCount++;
 
-      // Check for ghost swarm ability (every 8 attacks)
-      if (this.attackCount % 8 === 0 && allEnemies) {
-        this.startGhostChain(target, allEnemies);
-        SoundManager.playFreeze();
-      } else {
-        // Normal ghost projectile attack
-        this.ghosts.push(new Ghost(this.x, this.y, target, this.damage, this.team, this));
-      }
+      // Scythe attack with life steal
+      const isCrit = Math.random() < 0.15; // 15% crit chance
+      const damage = isCrit ? this.damage * 2 : this.damage;
+      target.takeDamage(damage, this, isCrit);
+
+      // Apply death DoT on melee
+      target.statusEffects.death += 2;
+
+      // Life steal on hit
+      const lifeSteal = Math.floor(damage * 0.2);
+      this.health = Math.min(this.maxHealth, this.health + lifeSteal);
 
       this.lastAttackTime = now;
     }
@@ -274,12 +219,19 @@ export class Wraith extends Fighter {
       ghost.draw(ctx);
     }
 
-    // Draw ghost chains
-    for (const chain of this.ghostChains) {
-      this.drawGhostChain(ctx, chain);
-    }
-
     if (this.isDead) return;
+
+    // Draw ghost burst indicator when about to burst
+    if (this.ghostBurstCooldown < 1000 && this.ghostBurstCooldown > 0) {
+      const warningAlpha = (1000 - this.ghostBurstCooldown) / 1000;
+      ctx.strokeStyle = `rgba(255, 255, 255, ${warningAlpha * 0.6})`;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, 30 + warningAlpha * 20, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
 
     // Draw soul reap indicator when about to reap
     if (this.reapCooldown < 500 && this.reapCooldown > 0) {
@@ -304,53 +256,6 @@ export class Wraith extends Fighter {
     this.drawStatusEffects(ctx);
     SpriteRenderer.drawWraith(ctx, this.x, this.y, this.team, this.animationFrame);
     this.drawHealthBar(ctx);
-  }
-
-  private drawGhostChain(ctx: CanvasRenderingContext2D, chain: GhostChain): void {
-    const currentX = chain.x + (chain.targetX - chain.x) * chain.progress;
-    const currentY = chain.y + (chain.targetY - chain.y) * chain.progress;
-
-    // Draw ghostly trail
-    ctx.save();
-
-    // Draw line from source to current position (white/ghostly colors)
-    const gradient = ctx.createLinearGradient(chain.x, chain.y, currentX, currentY);
-    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.1)');
-    gradient.addColorStop(0.5, 'rgba(220, 220, 255, 0.4)');
-    gradient.addColorStop(1, 'rgba(255, 255, 255, 0.8)');
-
-    ctx.strokeStyle = gradient;
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(chain.x, chain.y);
-    ctx.lineTo(currentX, currentY);
-    ctx.stroke();
-
-    // Draw ghost head at current position
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-    ctx.beginPath();
-    ctx.arc(currentX, currentY - 2, 5, Math.PI, 0, false);
-    ctx.lineTo(currentX + 5, currentY + 4);
-    ctx.quadraticCurveTo(currentX + 3, currentY + 2, currentX + 2, currentY + 5);
-    ctx.quadraticCurveTo(currentX, currentY + 3, currentX - 2, currentY + 5);
-    ctx.quadraticCurveTo(currentX - 3, currentY + 2, currentX - 5, currentY + 4);
-    ctx.lineTo(currentX - 5, currentY - 2);
-    ctx.fill();
-
-    // Ghost eyes
-    ctx.fillStyle = '#333';
-    ctx.beginPath();
-    ctx.arc(currentX - 2, currentY - 1, 1, 0, Math.PI * 2);
-    ctx.arc(currentX + 2, currentY - 1, 1, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Outer glow
-    ctx.beginPath();
-    ctx.arc(currentX, currentY, 8, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-    ctx.fill();
-
-    ctx.restore();
   }
 
   protected drawHealthBar(ctx: CanvasRenderingContext2D): void {

@@ -5,31 +5,27 @@ import type { Team } from './types';
 export class Ghost {
   x: number;
   y: number;
-  targetX: number;
-  targetY: number;
-  speed: number = 4; // Slower, more ghostly movement
+  speed: number = 3;
   damage: number;
   team: Team;
-  target: Fighter;
   shooter: Fighter | null;
   isDead: boolean = false;
   angle: number;
   wobbleOffset: number = 0;
   trailParticles: { x: number; y: number; alpha: number }[] = [];
 
-  constructor(x: number, y: number, target: Fighter, damage: number, team: Team, shooter?: Fighter) {
+  // Chaining state
+  isChaining: boolean = false;
+  chainTarget: Fighter | null = null;
+  hitEnemies: Set<Fighter> = new Set();
+
+  constructor(x: number, y: number, angle: number, damage: number, team: Team, shooter?: Fighter) {
     this.x = x;
     this.y = y;
-    this.target = target;
-    this.targetX = target.x;
-    this.targetY = target.y;
+    this.angle = angle;
     this.damage = damage;
     this.team = team;
     this.shooter = shooter || null;
-
-    const dx = this.targetX - this.x;
-    const dy = this.targetY - this.y;
-    this.angle = Math.atan2(dy, dx);
   }
 
   update(enemies: Fighter[]): void {
@@ -52,53 +48,134 @@ export class Ghost {
     // Wobble for ghostly movement
     this.wobbleOffset += 0.3;
 
-    if (!this.target.isDead) {
-      this.targetX = this.target.x;
-      this.targetY = this.target.y;
-      const dx = this.targetX - this.x;
-      const dy = this.targetY - this.y;
+    if (this.isChaining && this.chainTarget) {
+      // Chaining mode - home in on target
+      if (this.chainTarget.isDead) {
+        // Target died, find new one or die
+        this.findNextChainTarget(enemies);
+        if (!this.chainTarget) {
+          this.isDead = true;
+          return;
+        }
+      }
+
+      const dx = this.chainTarget.x - this.x;
+      const dy = this.chainTarget.y - this.y;
       this.angle = Math.atan2(dy, dx);
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      // Move towards target
+      const chainSpeed = this.speed * 1.5;
+      this.x += Math.cos(this.angle) * chainSpeed;
+      this.y += Math.sin(this.angle) * chainSpeed;
+
+      // Check if hit target
+      if (distance < 15) {
+        this.hitChainTarget(enemies);
+      }
+    } else {
+      // Free flight mode - travel in straight line with wobble
+      const wobbleX = Math.sin(this.wobbleOffset) * 1.5;
+      const wobbleY = Math.cos(this.wobbleOffset * 1.3) * 1.5;
+
+      this.x += Math.cos(this.angle) * this.speed + wobbleX * 0.2;
+      this.y += Math.sin(this.angle) * this.speed + wobbleY * 0.2;
+
+      // Check collision with any enemy
+      for (const enemy of enemies) {
+        if (enemy.isDead || this.hitEnemies.has(enemy)) continue;
+        const dx = enemy.x - this.x;
+        const dy = enemy.y - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < 15) {
+          // Start chaining from this enemy
+          this.startChaining(enemy, enemies);
+          break;
+        }
+      }
     }
 
-    // Add wobble to movement
-    const wobbleX = Math.sin(this.wobbleOffset) * 1.5;
-    const wobbleY = Math.cos(this.wobbleOffset * 1.3) * 1.5;
-
-    this.x += Math.cos(this.angle) * this.speed + wobbleX * 0.3;
-    this.y += Math.sin(this.angle) * this.speed + wobbleY * 0.3;
-
-    const dx = this.targetX - this.x;
-    const dy = this.targetY - this.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    if (distance < 15) {
-      this.impact(enemies);
-    }
-
-    if (this.x < -50 || this.x > 1000 || this.y < -50 || this.y > 700) {
+    // Remove if way off screen
+    if (this.x < -200 || this.x > 1200 || this.y < -200 || this.y > 900) {
       this.isDead = true;
     }
   }
 
-  private impact(_enemies: Fighter[]): void {
-    this.isDead = true;
-    SoundManager.playFreeze(); // Eerie sound
+  private startChaining(firstTarget: Fighter, enemies: Fighter[]): void {
+    this.isChaining = true;
+    this.hitEnemies.add(firstTarget);
 
-    if (!this.target.isDead) {
-      // Deal damage
-      const isCrit = Math.random() < 0.1;
-      const finalDamage = isCrit ? this.damage * 2 : this.damage;
-      this.target.takeDamage(finalDamage, this.shooter || undefined, isCrit);
+    // Deal damage and apply death DoT
+    const isCrit = Math.random() < 0.1;
+    const finalDamage = isCrit ? this.damage * 2 : this.damage;
+    firstTarget.takeDamage(finalDamage, this.shooter || undefined, isCrit);
+    firstTarget.statusEffects.death += 5;
+    SoundManager.playFreeze();
 
-      // Apply death DoT
-      this.target.statusEffects.death += 5;
+    // Life steal for the wraith
+    if (this.shooter) {
+      const healAmount = Math.floor(finalDamage * 0.1);
+      this.shooter.health = Math.min(this.shooter.maxHealth, this.shooter.health + healAmount);
+    }
 
-      // Life steal for the wraith
-      if (this.shooter) {
-        const healAmount = Math.floor(finalDamage * 0.15);
-        this.shooter.health = Math.min(this.shooter.maxHealth, this.shooter.health + healAmount);
+    // Find next target to chain to
+    this.findNextChainTarget(enemies, firstTarget);
+
+    // If no target found, ghost dies
+    if (!this.chainTarget) {
+      this.isDead = true;
+    }
+  }
+
+  private hitChainTarget(enemies: Fighter[]): void {
+    if (!this.chainTarget) return;
+
+    this.hitEnemies.add(this.chainTarget);
+
+    // Deal reduced damage per chain
+    this.damage *= 0.85;
+    const isCrit = Math.random() < 0.1;
+    const finalDamage = isCrit ? Math.floor(this.damage * 2) : Math.floor(this.damage);
+    this.chainTarget.takeDamage(finalDamage, this.shooter || undefined, isCrit);
+    this.chainTarget.statusEffects.death += 4;
+
+    // Life steal
+    if (this.shooter) {
+      const healAmount = Math.floor(finalDamage * 0.1);
+      this.shooter.health = Math.min(this.shooter.maxHealth, this.shooter.health + healAmount);
+    }
+
+    // Find next target
+    const previousTarget = this.chainTarget;
+    this.findNextChainTarget(enemies, previousTarget);
+
+    // If no target found, ghost dies
+    if (!this.chainTarget) {
+      this.isDead = true;
+    }
+  }
+
+  private findNextChainTarget(enemies: Fighter[], fromTarget?: Fighter): void {
+    const sourceX = fromTarget ? fromTarget.x : this.x;
+    const sourceY = fromTarget ? fromTarget.y : this.y;
+
+    let closest: Fighter | null = null;
+    let closestDist = 80; // Chain range
+
+    for (const enemy of enemies) {
+      if (enemy.isDead || this.hitEnemies.has(enemy)) continue;
+      const dx = enemy.x - sourceX;
+      const dy = enemy.y - sourceY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist < closestDist) {
+        closestDist = dist;
+        closest = enemy;
       }
     }
+
+    this.chainTarget = closest;
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
@@ -115,11 +192,12 @@ export class Ghost {
     ctx.save();
     ctx.translate(this.x, this.y);
 
-    // Outer ethereal glow
+    // Outer ethereal glow (brighter when chaining)
+    const glowIntensity = this.isChaining ? 1 : 0.7;
     const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, 10);
-    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
-    gradient.addColorStop(0.3, 'rgba(220, 220, 255, 0.6)');
-    gradient.addColorStop(0.6, 'rgba(180, 180, 220, 0.3)');
+    gradient.addColorStop(0, `rgba(255, 255, 255, ${0.9 * glowIntensity})`);
+    gradient.addColorStop(0.3, `rgba(220, 220, 255, ${0.6 * glowIntensity})`);
+    gradient.addColorStop(0.6, `rgba(180, 180, 220, ${0.3 * glowIntensity})`);
     gradient.addColorStop(1, 'rgba(150, 150, 200, 0)');
 
     ctx.beginPath();
@@ -128,7 +206,7 @@ export class Ghost {
     ctx.fill();
 
     // Ghost body (small, cute ghost shape)
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.fillStyle = `rgba(255, 255, 255, ${0.9 * glowIntensity})`;
     ctx.beginPath();
     ctx.arc(0, -2, 5, Math.PI, 0, false); // Head
     ctx.lineTo(5, 4);
