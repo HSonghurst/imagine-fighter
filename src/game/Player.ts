@@ -40,7 +40,9 @@ export class Player {
     burning: 0,
     poison: 0,
     frozen: 0,
-    frozenUntil: 0
+    frozenUntil: 0,
+    void: 0,
+    death: 0
   };
 
   // Movement state
@@ -256,6 +258,22 @@ export class Player {
       this.health -= poisonDamage;
       DamageNumberManager.spawn(this.x, this.y - 10, poisonDamage, '#22c55e');
       this.statusEffects.poison = Math.max(0, this.statusEffects.poison - 0.5);
+    }
+
+    // Void damage (purple)
+    if (this.statusEffects.void > 0) {
+      const voidDamage = this.statusEffects.void;
+      this.health -= voidDamage;
+      DamageNumberManager.spawn(this.x, this.y - 10, voidDamage, '#a855f7');
+      this.statusEffects.void = Math.max(0, this.statusEffects.void - 1.2);
+    }
+
+    // Death damage (white/gray)
+    if (this.statusEffects.death > 0) {
+      const deathDamage = this.statusEffects.death;
+      this.health -= deathDamage;
+      DamageNumberManager.spawn(this.x, this.y - 10, deathDamage, '#e5e5e5');
+      this.statusEffects.death = Math.max(0, this.statusEffects.death - 1);
     }
 
     if (this.health <= 0) {

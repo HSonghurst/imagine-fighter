@@ -9,6 +9,7 @@ export interface StatusEffects {
   frozen: number;
   frozenUntil: number;
   void: number;
+  death: number;
 }
 
 export abstract class Fighter {
@@ -38,7 +39,8 @@ export abstract class Fighter {
     poison: 0,
     frozen: 0,
     frozenUntil: 0,
-    void: 0
+    void: 0,
+    death: 0
   };
 
   private lastStatusTick: number = 0;
@@ -153,6 +155,14 @@ export abstract class Fighter {
       this.health -= voidDamage;
       DamageNumberManager.spawn(this.x, this.y - 10, voidDamage, '#a855f7');
       this.statusEffects.void = Math.max(0, this.statusEffects.void - 1.2);
+    }
+
+    // Death damage (white/gray)
+    if (this.statusEffects.death > 0) {
+      const deathDamage = this.statusEffects.death;
+      this.health -= deathDamage;
+      DamageNumberManager.spawn(this.x, this.y - 10, deathDamage, '#e5e5e5');
+      this.statusEffects.death = Math.max(0, this.statusEffects.death - 1);
     }
 
     if (this.health <= 0) {
